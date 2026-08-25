@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Wrangler local cache/state (created by `wrangler deploy`/dry-run locally)
+.wrangler
+
 # Environment variables
 .env
 .env.local

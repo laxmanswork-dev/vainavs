@@ -1,0 +1,20 @@
+{
+  // Cloudflare deployment config for this project — a pure static Vite/React
+  // build with no server-side Worker code. This declares a static-assets-only
+  // Worker so `wrangler deploy` serves the built `dist/` folder directly,
+  // instead of trying (and failing) to treat this as a JS Worker entrypoint.
+  //
+  // No "main" field on purpose: there is no server-side script to run, only
+  // static files to serve.
+  "name": "vainivas-cafe",
+  "compatibility_date": "2024-09-23",
+  "assets": {
+    "directory": "./dist",
+    // React Router (client-side) owns routing — /menu, /contact,
+    // /reservations, and the catch-all NotFound page all resolve inside the
+    // SPA. This tells the Cloudflare edge to serve index.html for any path
+    // that isn't a real file in dist/, so direct loads/refreshes of those
+    // routes work instead of hitting a raw 404 before React ever loads.
+    "not_found_handling": "single-page-application"
+  }
+}
