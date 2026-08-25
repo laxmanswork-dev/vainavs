@@ -79,7 +79,20 @@ export function Hero() {
     // just applied here too. Same addition on Heritage.jsx/
     // OurStoryHero.jsx/SignatureMenu.jsx, so every Home section boundary
     // now reads the same way.
-    <section className="bg-espresso-950 border-cream-50/10 relative flex min-h-[calc(100svh-4.5rem)] flex-col overflow-hidden border-b lg:min-h-[calc(100vh-4.5rem)]">
+    // min-h shortened by 2.5rem on mobile only (new) — per follow-up
+    // ("hero content sits too low, category cards start too low, feel
+    // tighter"). Since the rail (Categories) is a normal in-flow child
+    // sitting right at this section's own bottom edge, and that edge is
+    // pinned to fill the full viewport height, the rail's on-screen
+    // position was really being set by this min-h value, not by its own
+    // padding — shortening it is what actually lifts the whole first-
+    // screen composition (content + rail together) up a bit, rather
+    // than just nudging content around independently inside an
+    // unchanged-height box. sm:min-h-[calc(100svh-4.5rem)] restores the
+    // exact original full-viewport value from `sm` (640px) up — tablet
+    // is completely untouched; lg's own dvh/vh swap right after it is
+    // also untouched.
+    <section className="bg-espresso-950 border-cream-50/10 relative flex min-h-[calc(100svh-4.5rem-2.5rem)] flex-col overflow-hidden border-b sm:min-h-[calc(100svh-4.5rem)] lg:min-h-[calc(100vh-4.5rem)]">
       {/* preload="auto" (BackgroundVideo defaults to "none") — this is a
           real video, not one of the project's usual empty placeholders, so
           it actually needs the browser to fetch and buffer it instead of
@@ -174,8 +187,19 @@ export function Hero() {
           (-20px -> +32px), inside the requested ~45-60px range. Still a
           transform, not a padding/margin change, so it's a pure visual
           nudge that doesn't touch the flex-centering math above, the rail
-          below, or any element's spacing relative to its neighbors. */}
-      <div className="relative z-10 flex flex-1 translate-y-8 flex-col items-center justify-center px-4 py-6 text-center lg:py-8">
+          below, or any element's spacing relative to its neighbors.
+          translate-y-3 sm:translate-y-8 + py-4 sm:py-6 (new) — mobile-only
+          follow-up ("hero content sits too low... reduce the gap under
+          the navbar"). translate-y-3 trims that downward shift to +12px
+          on phones (was +32px everywhere) — content, headline and both
+          buttons sit visibly higher without touching the transform's own
+          +32px value at `sm` (640px) and up, so tablet/desktop keep the
+          exact centered position described above. py-4 (was py-6, no
+          previous sm: override) shaves a little off the same short-
+          viewport floor mentioned above, for the same "gap under the
+          navbar" ask. sm:py-6 restores tablet's original floor exactly;
+          lg:py-8 (desktop) is untouched either way. */}
+      <div className="relative z-10 flex flex-1 translate-y-3 flex-col items-center justify-center px-4 py-4 text-center sm:translate-y-8 sm:py-6 lg:py-8">
         <Container className="flex flex-col items-center">
           <motion.div
             variants={staggerContainer(0.12)}
@@ -434,8 +458,14 @@ export function Hero() {
           component sitting on top of the hero rather than part of the
           same composition; matching top padding to the existing bottom
           padding gives the buttons-to-rail gap real breathing room
-          instead of the rail sitting flush against them. */}
-      <div className="relative z-20 py-4 sm:py-6 lg:py-8">
+          instead of the rail sitting flush against them.
+          py-4 -> py-3 on mobile only (new) — per the same "move the
+          category cards up" follow-up as the section's own shortened
+          min-h above: a little less padding directly around the rail on
+          phones, on top of the shorter section height doing most of the
+          actual lifting. sm:py-6 lg:py-8 (already present) are untouched
+          — tablet and desktop keep their exact original rail padding. */}
+      <div className="relative z-20 py-3 sm:py-6 lg:py-8">
         <Categories />
       </div>
     </section>
