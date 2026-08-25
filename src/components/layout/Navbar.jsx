@@ -332,15 +332,19 @@ export function Navbar() {
                   untouched) since that constant is general site config,
                   not specifically this one stylized navbar string — this
                   keeps the change scoped to exactly this file, as asked.
-                  text-[clamp(18px,2.2vw_+_10.5px,19px)] (was
-                  clamp(10px,3.5vw,14px)) — per follow-up, "target
-                  approximately 18-19px on mobile" (the explicit number
-                  given, taken as authoritative over the same follow-up's
-                  own "increase by 1-2px" estimate of the prior size,
-                  which didn't actually match this span's real computed
-                  range). Confirmed by measurement to still fit without
-                  overlap or wrapping at 320-430px, same as before. */}
-              <span className="min-w-0 flex-1 truncate text-[clamp(18px,2.2vw_+_10.5px,19px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
+                  text-[clamp(16px,2vw_+_8.8px,17px)] (was
+                  clamp(18px,2.2vw+10.5px,19px), before that
+                  clamp(10px,3.5vw,14px)) — the 18-19px pass fit without
+                  overlap/wrapping (confirmed then) but was still too
+                  wide for the row's available space at that size, so the
+                  span's own `truncate` was silently ellipsizing it down
+                  to "VaiNa..." — a real gap in that pass's own
+                  verification, which checked overlap and line-wrapping
+                  but never explicitly checked scrollWidth vs clientWidth
+                  for actual ellipsis. This pass's own check does compare
+                  those directly at every tested width. Per follow-up,
+                  "target approximately 16-17px on mobile." */}
+              <span className="min-w-0 flex-1 truncate text-[clamp(16px,2vw_+_8.8px,17px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
                 VaiNav&apos;s
               </span>
             </div>
@@ -483,7 +487,22 @@ export function Navbar() {
                   class needed here at all. `sm` and up: unchanged, full
                   "Order Online" + size-4 arrow at px-5 — this button's
                   sm+ rendering is byte-for-byte the same as before this
-                  pass. */}
+                  pass.
+                  hidden min-[360px]:inline on the "Order" span itself
+                  (new) — per a later follow-up: at exactly 320-359px
+                  there is a genuine hard space conflict, confirmed by
+                  measurement — with the logo, this button, the Swiggy
+                  icon and the hamburger all held at their current sizes,
+                  only ~35px is left for the brand text span next to the
+                  logo, and "VaiNav's" needs ~65px at a readable size (no
+                  font size down to even 10px closes that gap). Icon-only
+                  below 360px (this button's own text hidden, arrow
+                  still visible, aria-label on the Button unconditional
+                  either way so it's never unlabeled) frees exactly the
+                  room needed. 360px and up: completely unchanged from
+                  the previous pass — icon-only was scoped to the
+                  narrowest breakpoint specifically, not restored
+                  site-wide. */}
               <Button
                 href={SITE_CONFIG.swiggyMenu}
                 target="_blank"
@@ -492,7 +511,7 @@ export function Navbar() {
                 aria-label={`Order ${SITE_CONFIG.name} on Swiggy (opens in a new tab)`}
                 className="bg-[#b9783f] px-2.5 text-[#f4e8d8] hover:bg-[#a3692f] sm:translate-x-3 sm:px-5"
               >
-                <span className="sm:hidden">Order</span>
+                <span className="hidden min-[360px]:inline sm:hidden">Order</span>
                 <span className="hidden sm:inline">Order&nbsp;Online</span>
                 <ArrowRight
                   className="size-3.5 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1 sm:size-4"
