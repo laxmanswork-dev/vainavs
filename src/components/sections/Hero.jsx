@@ -9,37 +9,50 @@ import { fadeUp, staggerContainer } from '@animations/variants'
 import { videoCoffeePour } from '@assets'
 
 /**
- * A compact custom capital N for the "Vainav's" wordmark — per follow-up,
- * built strictly to a reference photo of an upright handwritten N (a
- * small entrance hook, NOT a loop; mostly-vertical strokes; a small tail
- * flick, not an exaggerated one). Great Vibes' own built-in capital N
- * (tried first, then scaled down) was rejected for the right reason: the
- * problem wasn't just its size, it's *structurally* a big curved swash
- * that reaches far left — no amount of scaling turns that into "upright
- * and clean," so this is a from-scratch compact path instead, tuned to
- * this exact reference rather than to Great Vibes' own design.
- * `stroke="currentColor"` inherits text-accent, same copper/gold as every
- * other letter; h-[0.78em] keeps its rendered height in line with the
- * surrounding text (roughly matching "V", not exceeding it) — no giant
- * loop, no swash, compact by construction rather than by scaling one
- * down after the fact.
+ * A custom capital N for the "Vainav's" wordmark, replacing the earlier
+ * CompactCapitalN — per urgent follow-up, that upright/small-hook design
+ * (built to an earlier reference photo) read as too plain; this one is
+ * built specifically to resemble Brittany Signature's own capital N: a
+ * long sweeping entry from the lower-left, a tall rising first stroke, a
+ * narrow diagonal sweeping down through the middle, and a long rising
+ * finishing stroke tapering to a fine point at the upper-right — one
+ * continuous-looking calligraphic movement, not three separate strokes
+ * bolted together.
+ *
+ * This is a FILLED outline (a real tapered letterform shape), not a
+ * uniform-width stroked line like the previous version — genuine
+ * calligraphy is thick where the pen presses down and thin on its
+ * connecting movements, and a single constant stroke-width can't produce
+ * that. The path was generated (not hand-typed) by a small script that
+ * samples a centerline of cubic-bezier segments, walks a width value
+ * along it (thick at the entry/first-stroke/final-stroke, narrow through
+ * the diagonal, tapering to a point at the very tip), and offsets left/
+ * right of the centerline by half that width at each sample to build the
+ * two edges of the outline — the standard technique for constructing a
+ * calligraphic letterform, just computed instead of eyeballed, so the
+ * taper is genuinely smooth with no lumps at direction changes. (The
+ * generating script isn't part of the app; only its output — this path
+ * — is committed.)
+ * `fill="currentColor"` inherits text-accent, same copper/gold as every
+ * other letter — no new color introduced. h-[0.78em] (unchanged) keeps
+ * its rendered height in line with the surrounding script text; the
+ * path's own proportions (a tall cap-height reach at top, a small
+ * below-baseline entry swash) are what give it its capital-letter scale
+ * without this className needing to change. Being a filled vector path
+ * (not a raster image), it stays sharp at any size, including 4K.
  */
-function CompactCapitalN(props) {
+function SignatureCapitalN(props) {
   return (
     <svg
-      viewBox="0 0 90 130"
+      viewBox="-10 -15 115 165"
       className="inline-block h-[0.78em] w-auto align-baseline"
       style={{ transform: 'translateY(0.08em)' }}
       aria-hidden="true"
       {...props}
     >
       <path
-        d="M35,20 C27,15 19,18 22,27 L18,122 L82,18 L82,118 C82,124 88,128 95,124"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="11"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M15.37,144.83 L14.05,143.28 L13,141.56 L12.13,139.58 L11.44,137.39 L10.94,135 L10.62,132.45 L10.49,129.76 L10.52,126.96 L10.73,124.07 L11.09,121.13 L11.61,118.14 L12.26,115.14 L13.06,112.15 L13.98,109.18 L15.03,106.26 L16.25,103.29 L17.41,100.4 L18.55,97.13 L19.65,93.57 L20.72,89.71 L21.76,85.54 L22.78,81.05 L23.76,76.24 L24.71,71.11 L25.62,65.66 L26.49,59.89 L27.32,53.79 L28.1,47.37 L28.83,40.62 L29.52,33.54 L30.15,26.14 L30.71,18.7 L30.95,18.3 L31.37,17.24 L31.73,16.48 L31.98,16.01 L32.07,15.79 L31.95,15.73 L31.67,15.71 L31.38,15.63 L31.25,15.49 L31.41,15.43 L31.84,15.55 L32.49,15.92 L33.29,16.59 L34.19,17.54 L35.15,18.79 L36.15,20.33 L38.36,24.04 L40.59,27.84 L42.83,31.72 L45.07,35.67 L47.31,39.69 L49.54,43.79 L51.75,47.96 L53.94,52.21 L56.1,56.53 L58.22,60.93 L60.29,65.4 L62.3,69.94 L64.24,74.56 L66.12,79.25 L67.92,84 L69.65,88.86 L70.45,90.8 L71.22,92.58 L72.01,94.27 L72.82,95.85 L73.66,97.33 L74.53,98.69 L75.45,99.94 L76.45,101.06 L77.54,102.03 L78.74,102.85 L80.08,103.45 L81.53,103.79 L83.05,103.82 L84.56,103.54 L86.03,102.97 L87.87,101.8 L89.52,99.49 L90.83,96.83 L91.96,93.73 L92.95,90.23 L93.82,86.33 L94.56,82.08 L95.18,77.52 L95.67,72.67 L96.03,67.59 L96.25,62.33 L96.33,56.92 L96.26,51.42 L96.04,45.86 L95.67,40.3 L95.14,34.79 L94.46,29.44 L94.03,26.1 L93.46,22.8 L92.78,19.6 L91.98,16.52 L91.07,13.55 L90.05,10.71 L88.95,7.99 L87.76,5.41 L86.51,2.97 L85.2,0.65 L83.84,-1.52 L82.45,-3.57 L81.03,-5.48 L79.57,-7.28 L78.09,-8.97 L76.59,-10.54 L75.41,-9.46 L76.82,-7.89 L78.06,-6.16 L79.16,-4.28 L80.11,-2.25 L80.93,-0.09 L81.64,2.2 L82.23,4.59 L82.74,7.09 L83.17,9.69 L83.55,12.38 L83.89,15.17 L84.21,18.05 L84.52,21.02 L84.84,24.09 L85.17,27.24 L85.54,30.56 L86.24,35.84 L86.86,41.13 L87.39,46.48 L87.83,51.83 L88.18,57.14 L88.42,62.36 L88.56,67.44 L88.58,72.33 L88.47,76.98 L88.23,81.35 L87.85,85.39 L87.33,89.02 L86.66,92.2 L85.86,94.86 L84.96,96.92 L84.13,98.2 L83.77,98.29 L83.12,98.55 L82.6,98.65 L82.15,98.65 L81.72,98.56 L81.23,98.35 L80.67,97.99 L80.05,97.44 L79.38,96.71 L78.68,95.8 L77.97,94.71 L77.24,93.46 L76.51,92.06 L75.78,90.52 L75.05,88.85 L74.35,87.14 L72.66,82.3 L70.95,77.45 L69.22,72.64 L67.48,67.87 L65.73,63.15 L63.95,58.47 L62.15,53.85 L60.31,49.29 L58.43,44.8 L56.51,40.38 L54.55,36.03 L52.53,31.77 L50.45,27.6 L48.31,23.52 L46.12,19.55 L43.85,15.67 L42.6,13.7 L41.32,11.89 L40,10.27 L38.6,8.83 L37.09,7.56 L35.41,6.51 L33.5,5.74 L31.38,5.38 L29.15,5.52 L27.01,6.21 L25.13,7.32 L23.55,8.74 L22.24,10.38 L21.15,12.2 L20.24,14.19 L19.29,17.3 L18.72,25.28 L18.22,32.65 L17.75,39.68 L17.31,46.38 L16.87,52.76 L16.44,58.8 L16,64.51 L15.54,69.89 L15.05,74.93 L14.51,79.64 L13.91,84.01 L13.25,88.04 L12.51,91.72 L11.68,95.05 L10.78,98.02 L9.75,100.71 L8.51,103.83 L7.43,107.13 L6.56,110.48 L5.89,113.86 L5.43,117.22 L5.17,120.56 L5.1,123.84 L5.23,127.04 L5.53,130.14 L6.02,133.12 L6.69,135.95 L7.53,138.61 L8.55,141.1 L9.75,143.38 L11.14,145.45 L12.63,147.17 Z"
+        fill="currentColor"
       />
     </svg>
   )
@@ -353,17 +366,24 @@ export function Hero() {
                     fixed the size but not the actual complaint: Great
                     Vibes' N is *structurally* a big curved swash reaching
                     far left, and no amount of scaling makes that "upright
-                    and clean." Landed on CompactCapitalN (defined above)
-                    — a from-scratch compact path built strictly to a
-                    supplied reference photo (small entrance hook, not a
-                    loop; mostly-vertical strokes; small tail), not an
-                    attempt to approximate Great Vibes' own design at a
-                    smaller size. "Vai"/"av's" are completely untouched
-                    plain text in this same font-script span, same as
-                    always. */}
+                    and clean." Landed on CompactCapitalN — a from-scratch
+                    compact path built strictly to a supplied reference
+                    photo (small entrance hook, not a loop; mostly-
+                    vertical strokes; small tail).
+                    CompactCapitalN -> SignatureCapitalN (defined above,
+                    urgent follow-up) — the "upright and clean" compact N
+                    above, once fixed, was later called out as too plain/
+                    generic; this follow-up asked for the opposite
+                    direction specifically — a dramatic, sweeping
+                    signature-script capital N (Brittany Signature was the
+                    named style reference) that reads as "personally
+                    handwritten," not the earlier restrained hook-and-
+                    verticals shape. Same treatment either way: only this
+                    one glyph changes, "Vai"/"av's" are completely
+                    untouched plain text in this same font-script span. */}
                 <span className="font-script text-accent mt-4 block text-7xl leading-[1.05] normal-case sm:mt-5 sm:text-8xl lg:mt-6 lg:text-9xl">
                   Vai
-                  <CompactCapitalN />
+                  <SignatureCapitalN />
                   av&apos;s
                 </span>
               </motion.h1>
