@@ -161,7 +161,24 @@ export function Footer() {
             {SITE_CONFIG.contact.phoneDisplay}
           </a>
 
-          <Button to={ROUTES.RESERVATIONS} size="sm" className="mt-4">
+          {/* to={ROUTES.RESERVATIONS} -> href={SITE_CONFIG.swiggyMenu} — the
+              reservations route this used to point at was removed entirely
+              (the café doesn't have seating capacity for online booking;
+              see routes/AppRoutes.jsx), so "Order Now" needed a real
+              destination. Mirrors the exact fix Navbar.jsx's own "Order
+              Online" button already got in an earlier pass (same external
+              Swiggy URL, same target/rel — see that button's own comment
+              for the full rationale): Button already renders an external
+              `<a>` when given `href` instead of `to` (see Button.jsx), so
+              swapping the prop is the only change needed. Label stays
+              "Order Now" (Footer's own existing wording, untouched). */}
+          <Button
+            href={SITE_CONFIG.swiggyMenu}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            className="mt-4"
+          >
             Order Now
             <ArrowRight
               className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"

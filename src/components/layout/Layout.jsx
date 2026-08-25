@@ -30,10 +30,13 @@ export function Layout() {
           flat fill through. Home's own sections (Hero, Heritage,
           CoffeeStory, ...) are each opaque and paint over this regardless,
           so this only actually becomes visible on routes that don't fill
-          it with their own section background yet — the ComingSoon-backed
-          pages (Our Story, Menu, Contact, Reservations) and NotFound —
-          giving them the same layered coffee-house depth in one place
-          instead of touching each page file individually. */}
+          it with their own section background yet — just NotFound now
+          (Menu/Contact both paint their own bg-atmosphere/section
+          background already) — giving it the same layered coffee-house
+          depth as everywhere else instead of needing its own copy of this
+          class. (The old Reservations page/route this comment used to
+          also list is gone entirely — see routes/AppRoutes.jsx — and took
+          its one dependency on this fallback, ComingSoon.jsx, with it.) */}
       <main id="main-content" className="bg-atmosphere flex-1 pt-[4.5rem]">
         <Outlet />
       </main>

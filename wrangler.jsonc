@@ -10,11 +10,14 @@
   "compatibility_date": "2024-09-23",
   "assets": {
     "directory": "./dist",
-    // React Router (client-side) owns routing — /menu, /contact,
-    // /reservations, and the catch-all NotFound page all resolve inside the
-    // SPA. This tells the Cloudflare edge to serve index.html for any path
-    // that isn't a real file in dist/, so direct loads/refreshes of those
-    // routes work instead of hitting a raw 404 before React ever loads.
-    "not_found_handling": "single-page-application"
-  }
+    // React Router (client-side) owns routing — /menu, /contact, and the
+    // catch-all NotFound page all resolve inside the SPA. This tells the
+    // Cloudflare edge to serve index.html for any path that isn't a real
+    // file in dist/, so direct loads/refreshes of those routes work
+    // instead of hitting a raw 404 before React ever loads. Also means a
+    // link to the old, now-removed /reservations route (see
+    // src/routes/AppRoutes.jsx) still resolves here — to the SPA's own
+    // NotFound page — instead of a raw edge 404.
+    "not_found_handling": "single-page-application",
+  },
 }

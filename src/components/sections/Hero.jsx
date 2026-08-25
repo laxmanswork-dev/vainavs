@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, CalendarCheck } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Container } from '@components/ui/Container'
 import { Button } from '@components/ui/Button'
 import { BackgroundVideo } from '@components/common/BackgroundVideo'
@@ -456,43 +456,45 @@ export function Hero() {
                   aria-hidden="true"
                 />
               </Button>
-              {/* Reserve a Table (was Our Story) — Our Story already has its
-                  own link in the navbar, so pairing it with Explore Menu
-                  here just split intent between two "browse" actions on a
-                  cafeteria site. Reserve a Table is the actual second
-                  high-intent action (Explore Menu → see the food, Reserve
-                  a Table → come eat it), same as the navbar's own Order
-                  Now button (also ROUTES.RESERVATIONS).
-                  CalendarCheck (was Heart, briefly) — reverted for the same
-                  reason as Explore Menu's icon above.
-                  "Reserve a Table" -> "Reservations Coming Soon" ->
-                  "Reservations" across two follow-ups — the café doesn't
-                  have seating capacity for online booking yet, so this
-                  can't say "Reserve a Table" as if a table can actually be
-                  booked right now. The first fix spelled that limitation
-                  out directly in the button ("Reservations Coming Soon"),
-                  but the very next follow-up asked for the opposite tone —
-                  a confident, quiet secondary action reading "Reservations"
-                  alone, with the unavailable-state messaging moved entirely
-                  onto the page it links to (see pages/Reservations.jsx) —
-                  the homepage shouldn't announce a limitation, just offer
-                  the action. Same position/shape/border/hierarchy/icon/
-                  hover as the original "Reserve a Table" — variant
-                  stays outlineInverse specifically because that's already
-                  this site's own "clearly secondary, next to a solid-fill
-                  sibling" treatment (see Button.jsx), so no extra styling
-                  was needed to make this read as quieter than Explore
-                  Menu. No responsive text-size override either — unlike
-                  the longer "Reservations Coming Soon" wording this
-                  briefly needed, plain "Reservations" is shorter than the
-                  original "Reserve a Table" and fits at every breakpoint
-                  the same way that did. */}
-              <Button to={ROUTES.RESERVATIONS} variant="outlineInverse" size="lg">
-                <CalendarCheck
-                  className="size-4 shrink-0 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
+              {/* Reserve a Table -> Reservations Coming Soon -> Reservations
+                  -> Our Story across three follow-ups. The reservations
+                  route itself is gone now (removed entirely — the café
+                  doesn't have seating capacity for online booking, and
+                  rather than keep a permanent "coming soon" page around,
+                  the page/route was deleted; see routes/AppRoutes.jsx and
+                  constants/routes.js), so this second CTA needed a new,
+                  real destination rather than another rewording of a page
+                  that no longer exists. Our Story already has its own
+                  entry point in the Navbar (a dedicated ScrollLink there),
+                  but Hero didn't have a second on-page action pointing at
+                  it before — same pairing logic as the original "Reserve a
+                  Table" idea (Explore Menu → see the food, this → know the
+                  place), just a different second action now that
+                  reservations aren't a thing this site offers.
+                  `${ROUTES.HOME}#our-story` — the same real anchor
+                  NAV_LINKS/Footer's own "Our Story" entry already points
+                  at (see constants/navigation.js's own comment for why
+                  there's no standalone /our-story route to link to
+                  instead). A plain <Link> (via Button's `to` prop) is
+                  enough to land on it correctly — ScrollToTop.jsx already
+                  handles any #hash on any route change, including a
+                  hash-only change while already on Home, the same way it
+                  already does for Footer's own hash links.
+                  ArrowRight (was CalendarCheck, which no longer fits an
+                  "Our Story" CTA) — reuses the exact same icon + hover-
+                  nudge Explore Menu already uses, after the text instead
+                  of before it, matching that button's own icon placement.
+                  Same position/shape/border/hierarchy/hover as before —
+                  variant stays outlineInverse, this site's own established
+                  "clearly secondary, next to a solid-fill sibling"
+                  treatment (see Button.jsx) — only the label, icon and
+                  destination changed. */}
+              <Button to={`${ROUTES.HOME}#our-story`} variant="outlineInverse" size="lg">
+                Our Story
+                <ArrowRight
+                  className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
                   aria-hidden="true"
                 />
-                Reservations
               </Button>
             </motion.div>
           </motion.div>

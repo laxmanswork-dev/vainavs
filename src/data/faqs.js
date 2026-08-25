@@ -1,4 +1,10 @@
-/** Frequently asked questions shown on the Contact/Reservations pages. */
+/** Frequently asked questions — currently unused (not rendered by any
+ * page). Was "shown on the Contact/Reservations pages" per this file's own
+ * original comment; the Reservations page/route no longer exists (removed
+ * entirely, see routes/AppRoutes.jsx), and neither page ever actually
+ * imported this list. Left as-is otherwise — the FAQ content itself
+ * (including the walk-in/reservation question below) is still accurate
+ * real-world info about the café, not a reference to the removed page. */
 export const FAQS = [
   {
     question: 'What are your opening hours?',
