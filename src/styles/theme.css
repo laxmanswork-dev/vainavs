@@ -1,0 +1,215 @@
+/**
+ * Design tokens - single source of truth for the Vainav's Cafeteria visual
+ * system. Exposed to Tailwind v4 via `@theme`, which auto-generates utility
+ * classes (bg-espresso-800, text-cream-100, font-serif, ease-luxury, etc.)
+ * from every variable declared below.
+ *
+ * The whole palette is built from exactly 4 requested brand colors — every
+ * scale below is either one of them at full strength or a computed tint/
+ * blend between them, so nothing on the site can be "off-palette":
+ *
+ *   Cream   #F3E9DC — lightest, the wall background          (wall-200)
+ *   Caramel #C08552 — the accent (CTAs, highlights)           (amber-500 / gold-500)
+ *   Coffee  #895737 — muted text, secondary accent, hover     (amber-700 / gold-600)
+ *   Brownie #5E3023 — ink (body text) and every dark band     (espresso-950)
+ *
+ * Palette:
+ *   espresso - Brownie-family: dark text and the dark "trim" bands (Hero,
+ *              Navbar, Footer, FullscreenMenu, Categories cards).
+ *   wall     - Cream-family: the painted-wall page/section backgrounds.
+ *   amber    - Caramel-family: the primary accent (CTAs, highlights).
+ *   gold     - same family as amber, used for secondary/luxury details.
+ *
+ * (A brown-Coffee accent, then a deep-burgundy/wine-red accent, were both
+ * tried across several follow-ups after this palette was first built, then
+ * explicitly reverted — "restore the original orange accent color/theme
+ * exactly as it was before the burgundy/red experiments." --color-accent
+ * below is back to plain Caramel, exactly as documented here from the
+ * start; nothing else in this file was ever touched by either experiment.)
+ */
+@theme {
+  /* ---------------------------------- Color: Espresso (coffee brown) ---- */
+  --color-espresso-50: #f7f2ed;
+  --color-espresso-100: #ede1d4;
+  --color-espresso-200: #d9c3a8;
+  --color-espresso-300: #c0a17c;
+  --color-espresso-400: #a17f5c;
+  --color-espresso-500: #7c5c3e;
+  --color-espresso-600: #5e4530;
+  --color-espresso-700: #46341f;
+  /* 800/900/950 are the site's actual dark "trim" colors — bg-espresso-950
+     usage (Hero, Footer, FullscreenMenu, SkipLink, FinalCta, ...) and
+     Categories' cards read off these. 950 is BROWNIE exact. */
+  --color-espresso-800: #895737; /* = Coffee */
+  --color-espresso-900: #6f402b; /* Coffee → Brownie blend */
+  --color-espresso-950: #5e3023; /* = Brownie */
+  /* Deeper than 950 — Brownie darkened further toward black, not one of the
+     4 exact brand colors but a same-family derivative. Used only for the
+     Navbar/Categories "coffee black" background, where 950 alone read as a
+     mid-brown rather than the near-black, roasted-bean tone that was asked
+     for. */
+  --color-coffee-black: #1b120c;
+
+  /* ---------------------------------------------- Color: Cream (base) --- */
+  /* Every step is a tint/shade of CREAM (#F3E9DC, exact at 200) — cream-50
+     used to be near-pure white (#fffdf9), which read as a cold "whites" mismatch
+     against the warm wood theme on every dark band (Hero, Button text,
+     Footer, Navbar, ...). Warmed the whole scale so even the lightest step
+     stays inside the brand palette instead of falling back to plain white. */
+  --color-cream-50: #faf2e6;
+  --color-cream-100: #f7ece0;
+  --color-cream-200: #f3e9dc; /* = Cream exact */
+  --color-cream-300: #e8d7bd;
+  --color-cream-400: #dcc29a;
+
+  /* --------------------------------------- Color: Amber (warm orange) --- */
+  --color-amber-300: #eedfce; /* pale Cream + Caramel tint */
+  --color-amber-400: #d2a882; /* vivid light Caramel, for text on dark bands */
+  --color-amber-500: #c08552; /* = Caramel */
+  --color-amber-600: #a56e45; /* Caramel → Coffee blend */
+  --color-amber-700: #895737; /* = Coffee */
+  --color-amber-800: #74442d; /* Coffee → Brownie blend */
+
+  /* ----------------------------------------- Color: Gold (brass gold) --- */
+  --color-gold-300: #eedfce;
+  --color-gold-400: #d2a882;
+  --color-gold-500: #c08552; /* = Caramel */
+  --color-gold-600: #895737; /* = Coffee */
+
+  /* ------------------------------------- Color: Wall (beige / crema) ---- */
+  /* The site's actual painted-wall backgrounds, both derived from CREAM —
+     wall-200 is Cream exact, wall-300/400 are Cream tinted with Caramel so
+     sections/cards read as a warmer wall panel while staying light enough
+     to hold dark (Brownie/Coffee) text at a solid contrast ratio. */
+  --color-wall-200: #f3e9dc; /* = Cream */
+  --color-wall-300: #e6d0ba; /* Cream + ~25% Caramel */
+  --color-wall-400: #dfc1a5; /* Cream + ~40% Caramel, for borders */
+
+  /* --------------------------------------------------------- Typography - */
+  /* --font-serif and --font-sans both resolve to the same Montserrat family
+     now (weight is what tells headings and body apart, not typeface) — kept
+     as two separate tokens/utility classes rather than merging them so
+     every existing font-serif call site (base.css h1-h6, FullscreenMenu)
+     didn't need touching. */
+  --font-serif: 'Montserrat Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Montserrat Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-script: 'Great Vibes', cursive;
+  /* A --font-hero-display token (tried across Bodoni Moda italic ->
+     Cormorant Garamond -> Fraunces -> Young Serif) was removed in favor
+     of plain --font-script per an earlier follow-up ("restore 1st font
+     style"). A --font-hero-brand token (Kaushan Script) briefly replaced
+     it again later, then was itself reverted right back to --font-script
+     per a follow-up two turns after that ("restore the font style") —
+     removed here along with its Fontsource package and fonts.css import,
+     not just left unused. Hero's own wordmark reads plain --font-script
+     (Great Vibes) again now, same as every other use of this token. */
+  /* Scoped to ONE surface: the hamburger FullscreenMenu overlay's own
+     supporting tagline (left column) — was also the nav items' font;
+     a follow-up asked for the nav words specifically to move to
+     --font-nav-display below, leaving this one for just the tagline now.
+     Deliberately separate from --font-serif/--font-sans (still
+     Montserrat, used everywhere else including the rest of the navbar
+     itself) so only this one panel gets the warmer editorial treatment. */
+  --font-menu-display: 'Spectral', ui-serif, Georgia, serif;
+  /* Scoped to ONE thing: the FullscreenMenu overlay's 4 nav words
+     (HOME/OUR STORY/MENU/CONTACT) only — see fonts.css for why DM Serif
+     Display specifically. Deliberately its own token, not a repoint of
+     --font-menu-display above, since the brief explicitly asked to
+     change the nav words' font while leaving the tagline's font alone —
+     two different serifs in one panel, on purpose. */
+  --font-nav-display: 'DM Serif Display', ui-serif, Georgia, serif;
+
+  /* Fine display tracking used for eyebrows / kickers */
+  --tracking-luxury: 0.22em;
+  /* Wider tracking reserved for the one "spelled-out" brand-descriptor
+     moment (Hero's "CAFETERIA" beneath the Vainav's wordmark) — a
+     deliberately wider step than --tracking-luxury, not a substitute for
+     it, so eyebrows/kickers site-wide stay at the more restrained value. */
+  --tracking-showcase: 0.35em;
+
+  /* ------------------------------------------------------------- Motion - */
+  /* Slow, deliberate, cinematic - never bouncy or flashy. */
+  --ease-luxury: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-luxury-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 250ms;
+  --duration-base: 500ms;
+  --duration-slow: 900ms;
+  --duration-cinematic: 1400ms;
+
+  /* -------------------------------------------------------------- Radii - */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+
+  /* ------------------------------------------------------------ Shadows - */
+  --shadow-soft: 0 4px 24px -4px rgb(28 19 12 / 0.12);
+  --shadow-lifted: 0 16px 48px -12px rgb(28 19 12 / 0.28);
+  --shadow-gold: 0 8px 32px -8px rgb(192 133 82 / 0.35); /* Caramel */
+
+  /* --------------------------------------------------------- Container -- */
+  --breakpoint-xs: 20rem; /* 320px floor for the responsive range */
+  --container-content: 80rem;
+
+  /**
+   * Semantic aliases - reference the palette above so the rest of the app
+   * speaks in intent ("surface", "ink", "accent") rather than raw color
+   * names. Declared inside @theme (not plain :root) on purpose: Tailwind v4
+   * only generates utilities like `bg-surface` / `text-ink` for --color-*
+   * variables that live in this block.
+   *
+   * Dark-first "matte espresso" brand: every page/section background is
+   * solid Brownie — no wood grain, no photographic texture, flat and matte
+   * by design. Text on that background reads in warm cream (--color-ink).
+   *
+   * Cards are the deliberate exception: --color-surface-raised is CREAM, not
+   * dark, specifically so a card (HeritageCard, MenuCard) reads as a
+   * distinct light layer floating on the dark canvas instead of blending
+   * into it — that layer separation was the whole point of this pass. Card
+   * components can't read --color-ink/--color-ink-muted for their internal
+   * text (that's light, tuned for the dark page background) — they hardcode
+   * a dark ink-inverse / espresso-700 pairing instead; see Heritage.jsx and
+   * SignatureMenu.jsx.
+   *
+   * Navbar/Categories hardcode --color-coffee-black directly (a shade
+   * darker than this token) so they read as their own distinct floating
+   * bar; Hero, FinalCta, Footer, FullscreenMenu and SkipLink hardcode
+   * --color-espresso-950 directly instead of this token — kept explicit so
+   * they can't drift.
+   */
+  --color-surface: var(--color-espresso-950); /* = Brownie */
+  --color-surface-raised: var(--color-wall-200); /* = Cream, for cards only */
+  --color-surface-elevated: var(--color-wall-300); /* Cream + Caramel tint */
+
+  --color-ink: var(--color-cream-100);
+  --color-ink-muted: var(--color-cream-300);
+  /* Opposite of --color-ink — dark, for text on a bg-ink fill (Button's
+     `outline` variant hover state) AND for card-internal text (see above).
+     NOT used by ::selection — that pairs with a fixed amber-400 highlight
+     regardless of theme, so it hardcodes its own dark text instead (see
+     base.css). */
+  --color-ink-inverse: var(--color-espresso-950); /* = Brownie */
+
+  --color-line: var(--color-wall-400);
+  --color-line-strong: var(--color-amber-700); /* = Coffee */
+
+  /* --color-accent went orange/gold Caramel -> brown Coffee -> deep
+     burgundy/wine red across several follow-ups (each with its own
+     --color-accent-soft light tier, added because the darker values
+     didn't clear WCAG contrast as bare text on this site's dark
+     backgrounds) — all of it explicitly reverted per "HARD RESTORE
+     MODE — restore the original orange accent color/theme exactly as it
+     was before the burgundy/red experiments." Back to the original two
+     lines below, byte-for-byte; --color-accent-soft is gone (never
+     existed before the brown experiment) — every call site that used it
+     was reverted back to plain --color-accent too (Navbar, Footer,
+     FullscreenMenu, LocationCard, Categories, Button.jsx's ghost
+     variant, Hero's own wordmark), not left pointing at a now-missing
+     token. */
+  --color-accent: var(--color-amber-500); /* = Caramel */
+  --color-accent-strong: var(
+    --color-amber-700
+  ); /* = Coffee — button hover only, see amber-400 for text/icons on the dark page background */
+  --color-luxury: var(--color-gold-600); /* = Coffee */
+}

@@ -1,0 +1,593 @@
+/**
+ * Base layer - element-level defaults. Kept inside `@layer base` so these
+ * rules lose specificity battles to Tailwind utilities, matching how the
+ * rest of the codebase should override them (utility-first, no !important).
+ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-line/60;
+  }
+
+  html {
+    scroll-behavior: auto; /* Lenis owns smooth scrolling; see useLenis */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Deliberately flat/matte — no grain, glow or vignette layer. A photo-
+     texture wood grain was tried and dropped: it read as busy, reduced
+     contrast between cards and their background, and worked against the
+     "distinct light card floating on a dark canvas" layering this palette
+     is built around. Depth comes from the surface/surface-raised color
+     jump and shadow-* utilities instead of a texture. */
+  body {
+    @apply bg-atmosphere text-ink font-sans text-[15px] leading-relaxed antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    /* font-semibold (was font-medium) — bolder, handcrafted presence, but
+       Fraunces' own soft-contrast letterforms keep it from reading sharp
+       the way a heavier weight on a geometric sans would. */
+    @apply text-ink font-serif font-semibold tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  video {
+    @apply block max-w-full;
+  }
+
+  svg {
+    @apply shrink-0;
+  }
+
+  /* Pairs with a fixed amber-400 highlight regardless of theme (light or
+     dark), so it hardcodes dark text rather than reading --color-ink-inverse
+     — that token means "opposite of ink" for Button's outline-hover state,
+     which is a different, theme-relative concern. */
+  ::selection {
+    @apply text-espresso-900 bg-amber-400/70;
+  }
+
+  /* Visible only for keyboard navigation, never on mouse click. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    /* bg-surface, not bg-surface-raised — that token is Cream now, reserved
+       for cards; the scrollbar track should match the dark page instead. */
+    @apply bg-surface;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-espresso-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-500;
+  }
+
+  html {
+    scrollbar-color: var(--color-espresso-600) var(--color-espresso-950);
+    scrollbar-width: thin;
+  }
+
+  /* Respect the OS-level reduced-motion preference site-wide. Individual
+     Framer Motion / GSAP animations should also check useReducedMotion(),
+     this is the CSS-side safety net. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Eyebrow / kicker text used above section headings, e.g. "OUR STORY".
+     Deliberately carries no color of its own — pair with an explicit
+     text-color utility every time it's used (`Kicker.jsx` bakes in the
+     default `text-amber-400`, a vivid light accent for the dark page
+     background every section shares now). */
+  .text-kicker {
+    @apply font-sans text-xs font-semibold uppercase;
+    letter-spacing: var(--tracking-luxury);
+  }
+
+  /* Screen-reader-only utility for skip links / accessible labels. */
+  .sr-only-focusable:not(:focus) {
+    @apply sr-only;
+  }
+
+  /* Hides the scrollbar on an `overflow-x-auto` strip while keeping it
+     genuinely scrollable (wheel/touch/keyboard all still work — only the
+     visible track/thumb is gone). Used by the Full Menu page's mobile
+     category strip, per follow-up ("horizontally scrollable... hide the
+     ugly default scrollbar"). Both properties are needed together:
+     scrollbar-width for Firefox, the ::-webkit-scrollbar rule for
+     Chrome/Safari/Edge — neither alone covers every engine. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Layered "inside a premium coffee house at night" backdrop for every
+   non-hero surface — same base color as plain `bg-surface`, just no
+   longer painted perfectly flat. Two extremely subtle radial layers on
+   top of it: a vignette that deepens toward the edges (rgb(27 18 12) =
+   --color-coffee-black, hardcoded literal — a gradient color-stop alpha
+   needs a literal, not a var(), same reason Hero/FinalCta hardcode their
+   own gradient stops) and a faint warm lift near the top (rgb(137 87 55) =
+   --color-espresso-800/Coffee — deliberately NOT Caramel/--color-accent;
+   this is ambient room warmth, not a brand accent, so it stays one shade
+   more muted/brown than the actual Caramel used for buttons/signature/
+   highlights elsewhere). Both layers fade out well before the 50% mark, so
+   the center — where headings/body copy actually sit — stays the calmest,
+   most legible part of the section either way.
+   No texture/noise layer added on top of this — color-only is the safest
+   way to add depth without touching any element's DOM structure, position,
+   or stacking order; --color-surface itself is untouched.
+   Declared via `@utility` (Tailwind v4's registration syntax), not a plain
+   `@layer utilities` class — required for it to be `@apply`-able (see
+   base.css's own `body` rule) and to compose correctly like every other
+   real Tailwind utility. */
+@utility bg-atmosphere {
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(ellipse 85% 75% at 50% 40%, transparent 45%, rgb(27 18 12 / 0.3) 100%),
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgb(137 87 55 / 0.14) 0%, transparent 65%);
+}
+
+/* Vainav's signature button silhouette — a hand-drawn reference sketch
+   asked for a long horizontal plaque with the LEFT and RIGHT short edges
+   replaced by a shallow concave (inward-curving) cut, not a rounded
+   corner or pill — like a carved wooden café tag/nameplate, not a
+   standard UI button. Top and bottom edges stay perfectly straight; only
+   the two ends get sculpted.
+   Built as a 14-point clip-path polygon: each end is 7 points (the flush
+   corner, then 5 points stepping inward by 1px/2.5px/4px/2.5px/1px at
+   10/25/50/75/90% of the height, then the other flush corner) — enough
+   points for the straight polygon segments to read as a smooth curve
+   rather than a hard V-notch.
+   Depth was 2/5/8px, halved to 1/2.5/4px per follow-up — the fuller cut
+   read as "ribbon/banner/festival badge" rather than premium café, especially
+   on the accent-filled Order Now (looked like a badge) and the thin-bordered
+   outlineInverse Reserve a Table (the border's own direction changes at
+   each vertex read as a stray decorative line at the old, deeper depth).
+   Same concept, same 14-point shape — just a subtler, more controlled cut.
+   Depth is in fixed px, not %, deliberately — every button on the site is
+   a different width (text-driven), and a %-of-width notch would go
+   shallower on wide buttons and deeper on narrow ones. Fixed px keeps the
+   exact same sculpted depth on every button, at every breakpoint,
+   regardless of its width — it can never "collapse" on a narrow button
+   the way a %-based cut would.
+   clip-path clips box-shadow/background/everything together, so this one
+   class is all any button needs — hover/active/focus states never have to
+   redeclare the shape, they just inherit whatever's already clipped. */
+@utility btn-carved {
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    calc(100% - 1px) 10%,
+    calc(100% - 2.5px) 25%,
+    calc(100% - 4px) 50%,
+    calc(100% - 2.5px) 75%,
+    calc(100% - 1px) 90%,
+    100% 100%,
+    0% 100%,
+    1px 90%,
+    2.5px 75%,
+    4px 50%,
+    2.5px 25%,
+    1px 10%
+  );
+}
+
+/* Heritage-card frame — a hand-drawn reference sketch, refined three
+   times per follow-up corrections. Attempt 1's top/bottom traced a
+   genuine wave (too many straight-segment direction changes). Attempt 2
+   fixed that but met the sides with a straight diagonal chamfer at each
+   corner — "geometric, ticket/coupon-like." Attempt 3 swapped that for a
+   2-point quarter-circle rounding — closer, but per this follow-up still
+   read as slightly faceted ("tiny angular feeling") rather than truly
+   round, and asked for the side curve itself to go a touch stronger.
+   This version: top/bottom unchanged (already confirmed correct — one
+   shallow 1px center dip, a single direction change, not a wave). Each
+   corner is now a 5-point quarter-circle (radius 8px, sampled at
+   t=0.2/0.5/0.8 via real trigonometry) instead of 2 — enough samples
+   that consecutive straight segments differ by only ~18° each, which is
+   what actually reads as "round" instead of "faceted" with a polygon-
+   only shape. Side curves: same single sine-shaped bulge as before, just
+   deeper (max depth 11px -> 13px, "slightly more pronounced").
+   Every value below was computed from the same trig formulas for all
+   four corners/both sides (not eyeballed or manually mirrored per
+   corner, which is exactly how an earlier pass introduced a calculation
+   error) — confirmed left/right and top-half/bottom-half symmetric by
+   construction, addressing "perfectly symmetrical" and "no trapezoid/
+   skew" directly: the shape can't lean or skew when every offset on
+   every side is generated from the identical formula.
+   Fixed px depths (not %) for every horizontal offset, same reasoning as
+   `btn-carved` above — card width varies across breakpoints, and a
+   %-based cut would go shallower on wide cards, deeper on narrow ones.
+   Vertical positions use % (card height is comparatively stable — grid
+   rows stretch siblings to match). Max depth (13px) stays comfortably
+   inside HeritageCard's own p-5 (20px) padding.
+   32-point polygon, identical on all three cards via this one shared
+   class — same geometry everywhere, nothing per-card to drift. */
+@utility heritage-card-frame {
+  clip-path: polygon(
+    8px 0%,
+    50% 1px,
+    calc(100% - 8px) 0%,
+    calc(100% - 5.5px) 0.4px,
+    calc(100% - 2.3px) 2.3px,
+    calc(100% - 0.4px) 5.5px,
+    100% 8px,
+    calc(100% - 6.5px) 20%,
+    calc(100% - 11.3px) 35%,
+    calc(100% - 13px) 50%,
+    calc(100% - 11.3px) 65%,
+    calc(100% - 6.5px) 80%,
+    100% calc(100% - 8px),
+    calc(100% - 0.4px) calc(100% - 5.5px),
+    calc(100% - 2.3px) calc(100% - 2.3px),
+    calc(100% - 5.5px) calc(100% - 0.4px),
+    calc(100% - 8px) 100%,
+    50% calc(100% - 1px),
+    8px 100%,
+    5.5px calc(100% - 0.4px),
+    2.3px calc(100% - 2.3px),
+    0.4px calc(100% - 5.5px),
+    0% calc(100% - 8px),
+    6.5px 80%,
+    11.3px 65%,
+    13px 50%,
+    11.3px 35%,
+    6.5px 20%,
+    0% 8px,
+    0.4px 5.5px,
+    2.3px 2.3px,
+    5.5px 0.4px
+  );
+}
+
+/* Signature Menu card silhouette — from a hand-drawn reference sketch (a
+   tall vertical "sack/spool" shape: full-width top and bottom edges, sides
+   bowing gently inward toward the vertical center, then widening back out
+   toward both corners). Deliberately the OPPOSITE curve direction from
+   heritage-card-frame above (that one curves all four edges inward toward
+   sharp corners) — here only the sides pinch; the top/bottom stay at full
+   width, so the "flare" reads by CONTRAST against the narrower middle
+   rather than the corners literally projecting past the element's own box
+   (clip-path can't reveal content beyond an element's actual layout box,
+   so there's no other way to draw a true outward flare).
+   Six variants (-1 through -6), one per card — per follow-up ("make the
+   six cards individually handcrafted... not six copies of the same CSS
+   shape"), each with its OWN specific, named difference (not just a
+   different amplitude the way the earlier 3-variant pass worked):
+   -1: left edge carries one small irregular bump partway down (a real
+       hand-cut waver), plus the top dip is nudged off-center — "slightly
+       irregular left edge and a tiny natural top-edge variation."
+   -2: the same kind of small bump, mirrored onto the RIGHT edge instead,
+       top/bottom left at the standard center dip — "very subtle
+       opposite-side curvature" from -1.
+   -3: sides are the plain smooth curve; the bottom dip alone is deeper
+       and shifted off-center — "slightly different bottom flare."
+   -4: the shallowest peak of all six (roughly 60% the depth of the
+       others) plus one tiny +0.4px waver on the right side — "almost
+       straight, but with gentle organic imperfections."
+   -5: left and right use two different (but both still clean,
+       un-bumped) peak depths, 9px vs 10.5px — a smooth, whole-side
+       asymmetry rather than a local irregularity — "very subtle
+       asymmetry in the side edges."
+   -6: sides are the plain smooth curve; top and bottom dips
+       deliberately DON'T match each other (different depth, different
+       x-position) — "slightly different top/bottom edge character."
+   Every side profile is still built from maxDepth*sin(pi*t) for t=0..1
+   down the card (a real half-sine curve, not eyeballed points) with at
+   most one small deliberate perturbation layered on top where a variant's
+   own description calls for it — so every card still reads as one smooth
+   arc, never a jagged or "random CSS distortion" edge. 9 samples per side
+   (8 segments) keeps that smooth at these amplitudes.
+   Fixed-px depths (not %) for every horizontal offset — same reasoning as
+   heritage-card-frame/btn-carved: card width varies across the Signature
+   Menu's own swiper breakpoints, and a %-based cut would go shallower on
+   wide cards, deeper on narrow ones. Vertical positions stay in % (grid/
+   flex siblings keep card height comparatively stable within one row).
+   Each variant is reused as-is (same class) for its own card's inner
+   inset "frame" line in SignatureMenu.jsx's MenuCard — applying it to a
+   smaller, inset box scales the curve down proportionally with it, which
+   is what produces the "subtle inner printed border following the
+   organic card shape" without a second hand-tuned shape per card. */
+@utility menu-card-frame-1 {
+  clip-path: polygon(
+    0% 0%,
+    47% 1.6px,
+    100% 0%,
+    calc(100% - 3.8px) 12.5%,
+    calc(100% - 7.1px) 25%,
+    calc(100% - 9.2px) 37.5%,
+    calc(100% - 10px) 50%,
+    calc(100% - 9.2px) 62.5%,
+    calc(100% - 7.1px) 75%,
+    calc(100% - 3.8px) 87.5%,
+    100% 100%,
+    50% calc(100% - 1.2px),
+    0% 100%,
+    3.8px 87.5%,
+    7.1px 75%,
+    9.2px 62.5%,
+    10px 50%,
+    10.4px 37.5%,
+    7.1px 25%,
+    3.8px 12.5%
+  );
+}
+@utility menu-card-frame-2 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1.2px,
+    100% 0%,
+    calc(100% - 3.8px) 12.5%,
+    calc(100% - 7.1px) 25%,
+    calc(100% - 10.5px) 37.5%,
+    calc(100% - 10px) 50%,
+    calc(100% - 9.2px) 62.5%,
+    calc(100% - 7.1px) 75%,
+    calc(100% - 3.8px) 87.5%,
+    100% 100%,
+    50% calc(100% - 1.2px),
+    0% 100%,
+    3.8px 87.5%,
+    7.1px 75%,
+    9.2px 62.5%,
+    10px 50%,
+    9.2px 37.5%,
+    7.1px 25%,
+    3.8px 12.5%
+  );
+}
+@utility menu-card-frame-3 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1.2px,
+    100% 0%,
+    calc(100% - 3.8px) 12.5%,
+    calc(100% - 7.1px) 25%,
+    calc(100% - 9.2px) 37.5%,
+    calc(100% - 10px) 50%,
+    calc(100% - 9.2px) 62.5%,
+    calc(100% - 7.1px) 75%,
+    calc(100% - 3.8px) 87.5%,
+    100% 100%,
+    53% calc(100% - 1.9px),
+    0% 100%,
+    3.8px 87.5%,
+    7.1px 75%,
+    9.2px 62.5%,
+    10px 50%,
+    9.2px 37.5%,
+    7.1px 25%,
+    3.8px 12.5%
+  );
+}
+@utility menu-card-frame-4 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1px,
+    100% 0%,
+    calc(100% - 2.5px) 12.5%,
+    calc(100% - 4.6px) 25%,
+    calc(100% - 6px) 37.5%,
+    calc(100% - 6.5px) 50%,
+    calc(100% - 6px) 62.5%,
+    calc(100% - 4.6px) 75%,
+    calc(100% - 2.5px) 87.5%,
+    100% 100%,
+    50% calc(100% - 1px),
+    0% 100%,
+    2.5px 87.5%,
+    4.6px 75%,
+    6.4px 62.5%,
+    6.5px 50%,
+    6px 37.5%,
+    4.6px 25%,
+    2.5px 12.5%
+  );
+}
+@utility menu-card-frame-5 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1.3px,
+    100% 0%,
+    calc(100% - 4px) 12.5%,
+    calc(100% - 7.4px) 25%,
+    calc(100% - 9.7px) 37.5%,
+    calc(100% - 10.5px) 50%,
+    calc(100% - 9.7px) 62.5%,
+    calc(100% - 7.4px) 75%,
+    calc(100% - 4px) 87.5%,
+    100% 100%,
+    50% calc(100% - 1.3px),
+    0% 100%,
+    3.4px 87.5%,
+    6.4px 75%,
+    8.3px 62.5%,
+    9px 50%,
+    8.3px 37.5%,
+    6.4px 25%,
+    3.4px 12.5%
+  );
+}
+@utility menu-card-frame-6 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1px,
+    100% 0%,
+    calc(100% - 3.8px) 12.5%,
+    calc(100% - 7.1px) 25%,
+    calc(100% - 9.2px) 37.5%,
+    calc(100% - 10px) 50%,
+    calc(100% - 9.2px) 62.5%,
+    calc(100% - 7.1px) 75%,
+    calc(100% - 3.8px) 87.5%,
+    100% 100%,
+    46% calc(100% - 2.1px),
+    0% 100%,
+    3.8px 87.5%,
+    7.1px 75%,
+    9.2px 62.5%,
+    10px 50%,
+    9.2px 37.5%,
+    7.1px 25%,
+    3.8px 12.5%
+  );
+}
+
+/* Full Menu page — category tab shape. Per follow-up ("the current
+   category buttons look too generic... do NOT use border-radius:9999px
+   pill buttons... torn paper / hand-cut label"), a small hand-cut-label
+   silhouette for the category filter row (and, reused as-is at a smaller
+   auto-width, the small tag behind each category heading in the "All"
+   grouped view — same shape, same reasoning as every other clip-path
+   class in this file being reused for a second, related element).
+   Left/right edges stay straight (vertical) on purpose — these buttons
+   sit in a horizontal row/scroll strip of *varying widths* (short "All"
+   next to long "Burgers & Sandwiches"), and a straight vertical edge is
+   what keeps them all reading as one consistent row regardless of each
+   button's own text length. Only the top/bottom edges carry the small
+   hand-cut wave — max 2.5px, tiny on purpose (a label this small can't
+   carry the same depth the bigger card shapes use without looking
+   broken, not just "handcrafted"). Fixed-px depths (not %), same
+   reasoning as every other shape in this file: button width varies by
+   label length, not just by breakpoint. */
+@utility category-tab {
+  clip-path: polygon(
+    0% 2px,
+    25% 0px,
+    75% 1.5px,
+    100% 2.5px,
+    100% calc(100% - 2px),
+    70% 100%,
+    30% calc(100% - 1.5px),
+    0% calc(100% - 2.5px)
+  );
+}
+
+/* Full Menu page — compact item-card shape. menu-card-frame-{1..6} above
+   are deliberately tuned for the homepage's tall, photo-led Signature
+   Menu cards (9-14px peak depth against a ~350-450px-tall card); reused
+   as-is on the full menu's much shorter, scan-first item cards (as low as
+   ~100px on a compact mobile row), that same depth would read as broken
+   rather than handcrafted — the pinch would visually eat a third of a
+   short card's own height. These three variants use the identical
+   half-sine construction (maxDepth*sin(pi*t), same 9 samples per side) at
+   a proportionally much shallower depth (2.8-4.3px peak) instead, sized
+   to stay a *subtle* deckle-edge at any height in this card's actual
+   range, not a redesign of the technique. Cycled per item the same way
+   menu-card-frame-{1..6} are cycled per Signature Menu card, so no two
+   adjacent items trace the exact same silhouette. */
+@utility menu-item-frame-1 {
+  clip-path: polygon(
+    0% 0%,
+    50% 0.8px,
+    100% 0%,
+    calc(100% - 1.5px) 12.5%,
+    calc(100% - 2.7px) 25%,
+    calc(100% - 3.5px) 37.5%,
+    calc(100% - 3.8px) 50%,
+    calc(100% - 3.5px) 62.5%,
+    calc(100% - 2.7px) 75%,
+    calc(100% - 1.5px) 87.5%,
+    100% 100%,
+    50% calc(100% - 0.8px),
+    0% 100%,
+    1.3px 87.5%,
+    2.5px 75%,
+    3.2px 62.5%,
+    3.5px 50%,
+    3.2px 37.5%,
+    2.5px 25%,
+    1.3px 12.5%
+  );
+}
+@utility menu-item-frame-2 {
+  clip-path: polygon(
+    0% 0%,
+    50% 1px,
+    100% 0%,
+    calc(100% - 1.2px) 12.5%,
+    calc(100% - 2.3px) 25%,
+    calc(100% - 3px) 37.5%,
+    calc(100% - 3.2px) 50%,
+    calc(100% - 3px) 62.5%,
+    calc(100% - 2.3px) 75%,
+    calc(100% - 1.2px) 87.5%,
+    100% 100%,
+    50% calc(100% - 1px),
+    0% 100%,
+    1.1px 87.5%,
+    2px 75%,
+    2.6px 62.5%,
+    2.8px 50%,
+    2.6px 37.5%,
+    2px 25%,
+    1.1px 12.5%
+  );
+}
+@utility menu-item-frame-3 {
+  clip-path: polygon(
+    0% 0%,
+    50% 0.6px,
+    100% 0%,
+    calc(100% - 1.6px) 12.5%,
+    calc(100% - 3px) 25%,
+    calc(100% - 4px) 37.5%,
+    calc(100% - 4.3px) 50%,
+    calc(100% - 4px) 62.5%,
+    calc(100% - 3px) 75%,
+    calc(100% - 1.6px) 87.5%,
+    100% 100%,
+    50% calc(100% - 0.6px),
+    0% 100%,
+    1.5px 87.5%,
+    2.8px 75%,
+    3.7px 62.5%,
+    4px 50%,
+    3.7px 37.5%,
+    2.8px 25%,
+    1.5px 12.5%
+  );
+}

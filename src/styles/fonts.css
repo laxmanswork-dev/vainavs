@@ -1,0 +1,53 @@
+/**
+ * Self-hosted fonts (via Fontsource) — no external requests, no
+ * render-blocking third-party font CDN, full control over font-display.
+ *
+ * Montserrat — one variable family for both headings and body/nav, split by
+ *              weight only: semibold/bold for headings (see base.css's h1-h6
+ *              rule), regular/medium for body copy and UI. No separate serif
+ *              this pass — Fraunces was dropped in favor of a single clean
+ *              geometric sans across the whole type system.
+ * Great Vibes — flowing script, used for the logo wordmark, the odd
+ *               hand-lettered accent line ("Made for every mood.",
+ *               CoffeeStory's "It's shared."), AND the Hero's large
+ *               "VaiNav's" wordmark itself, via font-script. That one
+ *               heading went through several other display serifs
+ *               (Bodoni Moda italic, Cormorant Garamond, Fraunces, Young
+ *               Serif) chasing "premium but not handwritten," each
+ *               swapped out per its own follow-up, then briefly moved to
+ *               its own dedicated Kaushan Script token for a closer match
+ *               to the client's actual logo lettering — reverted back to
+ *               plain Great Vibes/font-script per the very next follow-up
+ *               ("restore the font style"). Stands in for Brittany
+ *               Signature, which isn't a free/self-hostable font (no
+ *               Fontsource/Google Fonts release) — Great Vibes was the
+ *               requested fallback. Never for body copy or long text.
+ * Spectral — warm editorial serif, used for the FullscreenMenu overlay's
+ *               small supporting tagline only (see --font-menu-display in
+ *               theme.css) — was also the nav items' own font until a
+ *               follow-up asked for something more expressive/distinctive
+ *               specifically for HOME/OUR STORY/MENU/CONTACT while
+ *               explicitly leaving the tagline untouched; Spectral stayed
+ *               put for that reason, DM Serif Display (below) took over
+ *               the nav words instead. Weight 500 (Medium, both upright
+ *               and italic) is the only weight/style still used here —
+ *               the tagline is italic, nothing else in this file reads
+ *               this token anymore.
+ * DM Serif Display — the FullscreenMenu overlay's nav items (HOME/OUR
+ *               STORY/MENU/CONTACT) only, see --font-nav-display in
+ *               theme.css — a high-contrast, distinctive-but-readable
+ *               display serif, warmer and more expressive than Spectral's
+ *               restrained book-serif character, per follow-up asking
+ *               specifically for that on the nav words (Spectral itself
+ *               stays for the tagline, see above — deliberately two
+ *               different serifs in this one panel, not a mistake).
+ *               Single weight (400 Regular, no bold cut) — the nav items
+ *               render at that native weight rather than triggering the
+ *               browser's synthetic/faux-bold.
+ */
+@import '@fontsource-variable/montserrat/index.css';
+@import '@fontsource-variable/montserrat/wght-italic.css';
+@import '@fontsource/great-vibes/400.css';
+@import '@fontsource/spectral/500.css';
+@import '@fontsource/spectral/500-italic.css';
+@import '@fontsource/dm-serif-display/400.css';
