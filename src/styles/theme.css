@@ -111,13 +111,14 @@
      Montserrat, used everywhere else including the rest of the navbar
      itself) so only this one panel gets the warmer editorial treatment. */
   --font-menu-display: 'Spectral', ui-serif, Georgia, serif;
-  /* Scoped to ONE thing: the FullscreenMenu overlay's 4 nav words
-     (HOME/OUR STORY/MENU/CONTACT) only — see fonts.css for why DM Serif
-     Display specifically. Deliberately its own token, not a repoint of
-     --font-menu-display above, since the brief explicitly asked to
-     change the nav words' font while leaving the tagline's font alone —
-     two different serifs in one panel, on purpose. */
-  --font-nav-display: 'DM Serif Display', ui-serif, Georgia, serif;
+  /* Scoped to ONE thing: the FullscreenMenu overlay's 5 nav words
+     (HOME/OUR HERITAGE/OUR STORY/MENU/CONTACT) only — see fonts.css for
+     why Playfair Display specifically (was DM Serif Display; repointed,
+     not a new token, since nothing else reads this one). Deliberately
+     its own token, not a repoint of --font-menu-display above, since the
+     tagline stays in Spectral throughout — two different serifs in one
+     panel, on purpose. */
+  --font-nav-display: 'Playfair Display', ui-serif, Georgia, serif;
 
   /* Fine display tracking used for eyebrows / kickers */
   --tracking-luxury: 0.22em;

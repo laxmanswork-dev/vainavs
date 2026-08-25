@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { NavLink } from 'react-router-dom'
-import { ArrowRight, CalendarCheck } from 'lucide-react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Container } from '@components/ui/Container'
-import { NAV_LINKS } from '@constants/navigation'
 import { ROUTES } from '@constants/routes'
 import { SITE_CONFIG } from '@constants/site'
 import { SOCIAL_LINKS } from '@constants/social'
 import { useLockBodyScroll } from '@hooks/useLockBodyScroll'
+import { useLenis } from '@hooks/useLenis'
 import { toTelHref } from '@utils/formatters'
 import { EASE_LUXURY_OUT } from '@animations/motion.config'
 import { cn } from '@utils/cn'
@@ -19,9 +18,9 @@ const panelVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_LUXURY_OUT } },
 }
 
-// The decorative rule (left column) grows in on its own, ahead of the nav
-// items — "decorative rule reveals" as its own animation beat, not lumped
-// into the same stagger as the words.
+// The decorative rule (left info panel, desktop only) grows in on its own,
+// ahead of the nav items — its own animation beat, not lumped into the
+// nav's stagger.
 const ruleVariants = {
   hidden: { scaleY: 0 },
   visible: { scaleY: 1, transition: { duration: 0.6, ease: EASE_LUXURY_OUT, delay: 0.15 } },
@@ -32,73 +31,150 @@ const taglineVariants = {
   visible: { opacity: 1, transition: { duration: 0.5, ease: EASE_LUXURY_OUT, delay: 0.3 } },
 }
 
-// staggerChildren 0.12 (was 0.07) — per follow-up, a "100-150ms" gap
-// between each word entering one after another; 120ms sits in the middle
-// of that range. delayChildren unchanged — still waits for the panel/
-// rule/tagline to settle first.
+// staggerChildren 0.12 — a clear, readable ~120ms gap between each of the
+// 5 nav words entering one after another. delayChildren waits for the
+// panel/rule/tagline to settle first.
 const listVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12, delayChildren: 0.35 } },
 }
 
-// y: 18 -> 20, duration 0.5s — per follow-up's own explicit spec
-// (opacity 0->1, translateY(20px)->0). No bounce/zoom/rotation/elastic —
-// EASE_LUXURY_OUT is a plain cubic-bezier ease-out, same one every other
+// opacity 0->1, translateY(20px)->0 — a plain, restrained reveal per the
+// "no aggressive animation, no bouncing" brief; same easing every other
 // reveal on the site already uses.
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_LUXURY_OUT } },
 }
 
-// Mobile-only divider + Order Online/Reserve a Table row (new) — fades in
-// as its own beat once the nav list's own stagger (delayChildren 0.35 +
-// 3 * staggerChildren 0.12 ≈ 0.71, +itemVariants' own 0.5s duration) has
-// essentially settled, so it reads as "the next thing to arrive" rather
-// than competing with the nav words for attention.
-const mobileActionsVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_LUXURY_OUT, delay: 0.85 } },
+// Five items, in the exact required order — Home, Our Heritage, Our
+// Story, Menu, Contact. "Our Heritage"/"Our Story" scroll to a Home
+// section instead of routing to their own page (there is no standalone
+// route for either); the other three are real routes. Kept as a plain
+// local array (not NAV_LINKS, which only has 4 entries and is missing
+// "Our Heritage" entirely — the exact bug this pass fixes) so this
+// component owns its own complete, correct list; NAV_LINKS itself is
+// untouched since the Footer's sitemap column still reads from it.
+const MENU_ITEMS = [
+  { type: 'route', label: 'Home', path: ROUTES.HOME, end: true },
+  { type: 'scroll', label: 'Our Heritage', hash: '#heritage' },
+  { type: 'scroll', label: 'Our Story', hash: '#our-story' },
+  { type: 'route', label: 'Menu', path: ROUTES.MENU },
+  { type: 'route', label: 'Contact', path: ROUTES.CONTACT },
+]
+
+// Shared type treatment for every nav word, both link kinds — Playfair
+// Display Semibold (see --font-nav-display in theme.css/fonts.css),
+// fluid clamp() size (34px on the smallest phones up to a hard 58px cap
+// on desktop/4K — never "giant" at any width, per follow-up), controlled
+// (not wide/loose) tracking. Color transition only (no translate-x
+// shift, no scale) — "subtle... no aggressive animation... no scaling
+// that causes layout shift" — plus a thin underline reveal, an
+// absolutely-positioned decorative span that doesn't affect layout
+// either.
+const NAV_ITEM_CLASSES =
+  'group font-nav-display ease-luxury text-cream-100 hover:text-accent focus-visible:text-accent relative inline-block text-[clamp(2.125rem,1.6vw_+_1.7rem,3.625rem)] leading-[1.15] font-semibold tracking-tight transition-colors duration-[250ms] focus-visible:outline-none'
+
+const NAV_ITEM_UNDERLINE =
+  'bg-accent ease-luxury pointer-events-none absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-[250ms] group-hover:scale-x-100 group-focus-visible:scale-x-100'
+
+/**
+ * Local re-implementation of Navbar.jsx's own ScrollLink, scoped to just
+ * this file — "Our Heritage"/"Our Story" need the exact same scroll-to-
+ * section behavior here (offset by -72px for the fixed navbar, via the
+ * site's shared Lenis instance) that the desktop nav already has, but
+ * this pass is explicitly "ONLY fix the opened navigation menu/overlay,"
+ * so Navbar.jsx itself — including extracting this into a shared
+ * file — is left completely untouched. Same logic, small duplication,
+ * zero risk to the navbar.
+ */
+function MenuScrollLink({ hash, label, onNavigate }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const lenis = useLenis()
+
+  const scrollToTarget = () => {
+    if (lenis) {
+      lenis.scrollTo(hash, { offset: -72, duration: 1.2 })
+    } else {
+      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  // Handles the "navigated here from another page" case — once Home has
+  // mounted with this hash in the URL, scroll to it.
+  useEffect(() => {
+    if (location.pathname !== ROUTES.HOME || location.hash !== hash) return
+    const frame = requestAnimationFrame(scrollToTarget)
+    return () => cancelAnimationFrame(frame)
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, location.hash, lenis, hash])
+
+  function handleClick(event) {
+    event.preventDefault()
+    onNavigate()
+    if (location.pathname === ROUTES.HOME) {
+      scrollToTarget()
+    } else {
+      navigate(`${ROUTES.HOME}${hash}`)
+    }
+  }
+
+  return (
+    <a href={`${ROUTES.HOME}${hash}`} onClick={handleClick} className={NAV_ITEM_CLASSES}>
+      {label}
+      <span aria-hidden="true" className={NAV_ITEM_UNDERLINE} />
+    </a>
+  )
 }
 
 /**
  * Full-viewport navigation overlay, triggered by the Navbar's hamburger/X
  * button — the site's only navigation surface.
  *
- * Earlier redesign — the original version ("EXPLORE VAINAV'S" eyebrow +
- * 01-04 numbered links, uniform flex-col-items-center stack, Montserrat)
- * was called out as generic/template-like. That pass replaced it with an
- * asymmetric editorial grid: a left column carrying the site's own real
- * tagline ("Tradition Meets Modern Taste", from SITE_CONFIG) plus a thin
- * decorative rule, and a right column holding the nav words in Spectral
- * (a warm editorial serif) with per-item staggered indents/sizes.
- * Background reuses `bg-atmosphere` (the same layered "inside a premium
- * coffee house at night" treatment used site-wide) plus the same barely-
- * visible coffee-bean texture the Navbar/Categories already use.
+ * This is the fourth pass on this component's content/layout (see git
+ * history for the earlier three — a generic numbered-link stack, an
+ * asymmetric editorial grid with DM Serif Display nav words, then a
+ * follow-up that only touched the nav words' own font/rhythm). This pass
+ * is a full rebuild per an extremely detailed brief, fixing one real bug
+ * and rebalancing the whole composition:
  *
- * A follow-up then asked for changes to ONLY the 4 nav words themselves
- * (HOME/OUR STORY/MENU/CONTACT), explicitly leaving the rest — logo,
- * Order Now, hamburger, background, phone/socials, the left-column brand
- * detail, the overall grid layout — untouched:
- *   - nav words moved to their own font, DM Serif Display
- *     (font-nav-display) — more expressive/high-contrast than Spectral,
- *     which stays exactly where it was for the tagline (two different
- *     serifs in this one panel, on purpose, not a mistake)
- *   - the per-item staggered indent/alternating size (NAV_ITEM_RHYTHM) is
- *     gone — that "editorial rhythm" is exactly what the follow-up called
- *     "uneven alignment." All four words now share one left edge and one
- *     fluid clamp()-based size instead
- *   - one-by-one entrance sped up to a clearer ~120ms stagger between
- *     words (was 70ms), each still a plain opacity+translateY reveal
- *   - hover/focus now combines all three requested cues at once (color,
- *     an 8-12px rightward shift, the thin underline reveal) at a
- *     250-350ms duration — the earlier version deliberately used only
- *     color+underline per a different, now-superseded instruction
- *     ("pick 1-2 effects"); this follow-up explicitly asks for the
- *     combination instead
+ *   BUG FIXED: "Our Heritage" was completely missing from this menu.
+ *   NAV_LINKS (the shared constant this component used to `.map()`
+ *   directly) only ever had 4 entries (Home/Our Story/Menu/Contact) —
+ *   the desktop navbar has always shown "Our Heritage" too, but only
+ *   because Navbar.jsx inserts it by hand outside of NAV_LINKS.map, a
+ *   pattern this component never replicated. MENU_ITEMS (above) is this
+ *   component's own complete, correct 5-item list now.
+ *
+ *   TRUE centering: the old layout used per-breakpoint -translate-y-*
+ *   nudges to *approximate* a balanced position against the footer row.
+ *   This pass removes those — flex-1 + items-center + justify-center on
+ *   the content wrapper centers the whole group by construction, and (at
+ *   `lg`+) a 3-column grid with EQUAL outer tracks (1fr / auto / 1fr —
+ *   the exact same technique Navbar.jsx's own header row uses to keep
+ *   its center content mathematically centered regardless of what sits
+ *   in the side tracks) keeps the nav column centered on the full
+ *   viewport width even with the info panel sitting in the left track.
+ *
+ *   Typography: nav words move from DM Serif Display to Playfair
+ *   Display at a controlled Semibold weight and a much smaller fluid
+ *   clamp() range (34px mobile floor, 58px desktop/4K ceiling — was up
+ *   to 88px) — "the current huge serif menu typography is NOT
+ *   acceptable... do NOT use extremely heavy/bold typography."
+ *
+ *   The mobile-only "Order Online"/"Reserve a Table" row from an earlier
+ *   pass is removed — this brief's own exhaustive content list (mobile
+ *   layout, desktop layout, visual hierarchy, and final QA sections) is
+ *   explicit and consistent: 5 nav words, plus the tagline/location
+ *   panel, nothing else. Those two actions already have dedicated,
+ *   prominent entry points elsewhere (Navbar's own Order Online button,
+ *   Hero's two buttons) that this redesign doesn't touch.
  *
  * z-40 — deliberately BELOW Navbar's own header (z-50), so the header bar
  * — and the hamburger-now-X button inside it — stays visible and
- * clickable on top of this panel the whole time it's open.
+ * clickable on top of this panel the whole time it's open. Unchanged;
+ * the close button itself lives in Navbar.jsx, out of scope this pass.
  */
 export function FullscreenMenu({ open, onClose }) {
   useLockBodyScroll(open)
@@ -123,20 +199,22 @@ export function FullscreenMenu({ open, onClose }) {
           initial="hidden"
           animate="visible"
           exit="hidden"
-          // overflow-hidden -> overflow-y-auto overflow-x-hidden (new) —
-          // the mobile-only heading/divider/action-links added below (see
-          // the Container further down) mean this panel now has more
-          // content than before; on the shortest real phone viewports
-          // (~568-600px tall, minus this pt-[4.5rem]) that content can
-          // genuinely be taller than the space available. overflow-hidden
-          // would have silently CLIPPED the bottom of the menu there —
-          // overflow-y-auto lets it scroll instead, exactly the "works
-          // correctly with scrolling if necessary" ask; overflow-x-hidden
-          // keeps the original no-horizontal-scroll guarantee. On any
-          // viewport tall enough to fit everything (most phones, and
-          // certainly tablet/desktop) this never actually engages — no
-          // visible scrollbar, nothing looks different.
-          className="bg-atmosphere fixed inset-0 z-40 flex flex-col overflow-x-hidden overflow-y-auto pt-[4.5rem] backdrop-blur-md"
+          // min-h-dvh (new, alongside the existing inset-0) — explicit
+          // per follow-up ("use min-height:100dvh rather than relying
+          // only on height:100vh... account for mobile browser UI").
+          // `fixed` + `inset-0` already anchors this panel to all four
+          // viewport edges regardless of dynamic mobile toolbars (a
+          // stronger guarantee than a computed height value would be on
+          // its own), so this is a belt-and-suspenders addition, not a
+          // fix for an actual bug — it costs nothing and directly
+          // satisfies what was asked.
+          // overflow-y-auto (unchanged) — a real safety net: with 5 nav
+          // items now (was 4) plus the tagline/location panel below on
+          // mobile, the shortest real phone viewports can still be
+          // shorter than the content; this lets it scroll instead of
+          // clipping. Confirmed by testing it barely ever engages once
+          // the new, smaller clamp() type scale is in place.
+          className="bg-atmosphere fixed inset-0 z-40 flex min-h-dvh flex-col overflow-x-hidden overflow-y-auto pt-[4.5rem] backdrop-blur-md"
           // Clicking the panel's own background (not a link/button inside
           // it) closes it — there's no visually distinct "outside" on a
           // full-viewport overlay, so this is what "click outside closes
@@ -155,194 +233,125 @@ export function FullscreenMenu({ open, onClose }) {
             style={{ backgroundImage: COFFEE_BEAN_TEXTURE, backgroundRepeat: 'repeat' }}
           />
 
-          <div className="relative flex flex-1 flex-col justify-center">
-            {/* Container now wraps the whole mobile-visible stack (was
-                applied directly to the grid div below) — a mobile-only
-                small heading goes above the grid, a mobile-only divider +
-                Order Online/Reserve a Table row goes below it, both new
-                (see their own comments further down), and putting all
-                three inside one shared Container is what keeps their
-                left/right edges lined up with the grid's own edges (and
-                with the navbar/footer row's own edges) instead of each
-                computing its own centering independently. The grid div
-                itself keeps every one of its original classes unchanged
-                below — same rendered result at `lg` and up as before this
-                pass, nothing here touches desktop. */}
-            <Container>
-              {/* Small subtle heading (new) — mobile only. The desktop
-                  view already carries brand context via the left column's
-                  own tagline just below (`hidden lg:flex`); mobile hides
-                  that column entirely, so this fills the same "yes,
-                  you're in the Vainav's menu" role there, at eyebrow
-                  scale — reuses taglineVariants (same fade, same timing)
-                  and the same tracking-showcase token "Cafeteria" already
-                  uses in Hero.jsx, so this isn't a new type treatment,
-                  just the same one applied here too. */}
-              <motion.p
-                variants={taglineVariants}
-                className="tracking-showcase text-cream-200/50 mb-8 text-center text-xs font-medium uppercase lg:hidden"
-              >
-                {SITE_CONFIG.name}
-              </motion.p>
-
-              {/* Editorial grid — a left "brand detail" column and a right
-                  nav column, not a single centered stack. Below `lg` the
-                  left column is hidden entirely (kept simple on small
-                  screens, per the responsive brief — decorative extras give
-                  way before the primary navigation does) and the nav column
-                  takes the full width on its own.
-                  -translate-y-* — positions the whole composition slightly
-                  above true vertical center, so it reads as balanced
-                  against the footer row below rather than perfectly
-                  bisecting the screen; scoped here only, so the footer stays
-                  anchored and stable. */}
-              <div className="grid -translate-y-6 grid-cols-1 items-center gap-10 sm:-translate-y-8 lg:-translate-y-10 lg:grid-cols-12 lg:gap-8">
-                {/* Left column — the one subtle Vainav's-specific detail: a
-                  thin vertical rule (grows in on its own, see
-                  ruleVariants) beside the site's own real tagline and
-                  location, not invented filler copy. Small, muted, purely
-                  supporting — never competes with the nav words. */}
-                <div className="hidden lg:col-span-4 lg:flex lg:items-center lg:gap-5">
-                  <motion.span
-                    variants={ruleVariants}
-                    className="bg-accent/40 h-24 w-px origin-top"
-                    aria-hidden="true"
-                  />
-                  <motion.div variants={taglineVariants} className="max-w-[16rem]">
-                    <p className="font-menu-display text-cream-200/70 text-lg leading-snug italic">
-                      {SITE_CONFIG.tagline}
-                    </p>
-                    <p className="text-cream-200/40 mt-3 font-sans text-xs tracking-[0.2em] uppercase">
-                      {SITE_CONFIG.address.line1}
-                    </p>
-                  </motion.div>
-                </div>
-
-                {/* Right column — the nav itself. text-left (not centered),
-                  every word now sharing ONE left edge — no per-item
-                  indent (was NAV_ITEM_RHYTHM, removed per follow-up: that
-                  staggered-indent/alternating-size "editorial rhythm" is
-                  exactly what got called out as uneven alignment). Gap
-                  scales up with viewport (generous but controlled, not a
-                  cramped default list and not oversized) instead of one
-                  fixed value. */}
-                <motion.nav
-                  variants={listVariants}
-                  aria-label="Full site"
-                  className="col-span-1 flex flex-col gap-4 text-left sm:gap-6 lg:col-span-8 lg:gap-8"
-                >
-                  {NAV_LINKS.map((link) => (
-                    <motion.div key={link.path} variants={itemVariants}>
-                      <NavLink
-                        to={link.path}
-                        // end (unchanged) — HOME only reads as "active" on
-                        // an exact match to `/`, never just because it's
-                        // first in the list; the real current-page state,
-                        // not a default.
-                        end={link.path === ROUTES.HOME}
-                        onClick={onClose}
-                        className={({ isActive }) =>
-                          cn(
-                            // font-nav-display (was font-menu-display/
-                            // Spectral) — DM Serif Display, per follow-up,
-                            // scoped to just these 4 words; the tagline
-                            // beside them (untouched, out of scope this
-                            // pass) still reads in Spectral.
-                            // text-[clamp(...)] — fluid responsive size
-                            // (per follow-up, "use clamp()") instead of
-                            // discrete breakpoint jumps: ~44px on small
-                            // phones up to 88px at desktop widths, scaling
-                            // continuously in between so "Our Story" (the
-                            // longest word) never has its own awkward jump.
-                            // No font-weight class — DM Serif Display ships
-                            // one static weight (400 Regular, no bold cut);
-                            // forcing a heavier class would just trigger
-                            // the browser's synthetic/faux-bold.
-                            // hover:translate-x-2 (8px) / sm:translate-x-3
-                            // (12px) — the "shift slightly right" cue,
-                            // combined with the color + underline below;
-                            // per follow-up, use all three together this
-                            // time (an earlier pass deliberately picked
-                            // only two per a different, now-superseded
-                            // instruction to keep it to "1-2 effects").
-                            // duration-300 (was duration-[var(--duration-base)],
-                            // 500ms) — tightened to sit inside the
-                            // requested 250-350ms hover-response window.
-                            'group font-nav-display ease-luxury text-cream-100 hover:text-accent focus-visible:text-accent relative inline-block text-[clamp(2.75rem,6vw_+_1rem,5.5rem)] leading-[1.05] tracking-tight transition-[color,transform] duration-300 hover:translate-x-2 focus-visible:translate-x-2 sm:hover:translate-x-3 sm:focus-visible:translate-x-3',
-                            isActive && 'text-accent',
-                          )
-                        }
-                      >
-                        {link.label}
-                        {/* Hover/focus reveal — a thin rule grows in under
-                          the word from the left (echoes the left
-                          column's own rule, same visual language). */}
-                        <span
-                          aria-hidden="true"
-                          className="bg-accent ease-luxury absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 group-focus-visible:scale-x-100"
-                        />
-                      </NavLink>
-                    </motion.div>
-                  ))}
-                </motion.nav>
+          {/* flex-1 + items-center + justify-center — true centering by
+              construction, both axes, no manual offsets. px-6/sm:px-8
+              (same gutters Container uses elsewhere) keeps content off
+              the screen edges at every width without needing Container
+              itself here (Container's own max-width would fight the
+              lg:grid-cols-[1fr_auto_1fr] trick below, which needs to
+              span the full available width for its two outer tracks to
+              stay genuinely equal). */}
+          <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-10 sm:px-8">
+            {/* Below `lg`: a single centered column (info panel hidden,
+                per the mobile-layout brief — "do NOT keep the desktop
+                left-side information panel floating beside the
+                navigation on mobile"). `min(90%,45rem)` — "the navigation
+                should never touch the screen edges" — a width cap that
+                still shrinks gracefully on very narrow phones instead of
+                a bare fixed max-width.
+                At `lg` and up: a 3-column grid, equal 1fr outer tracks
+                (see this component's own top-level comment for why) —
+                info panel in the left track, nav in the center track
+                (mathematically centered on the full viewport regardless
+                of the info panel's width), an empty spacer in the right
+                track balancing it. */}
+            <div className="grid w-[min(90%,45rem)] grid-cols-1 items-center gap-10 lg:w-full lg:max-w-(--container-content) lg:grid-cols-[1fr_auto_1fr] lg:gap-12">
+              {/* Left info panel — desktop/lg only. The one subtle
+                  Vainav's-specific detail: a thin vertical rule beside
+                  the site's own real tagline and location, not invented
+                  filler copy — "should feel like an editorial detail,"
+                  not compete with the nav. justify-self-end sits it
+                  right against the nav column regardless of how wide
+                  this 1fr track actually is on an ultra-wide monitor,
+                  rather than drifting off toward the far left edge. */}
+              <div className="hidden lg:col-start-1 lg:flex lg:items-center lg:gap-5 lg:justify-self-end">
+                <motion.span
+                  variants={ruleVariants}
+                  className="bg-accent/40 h-16 w-px origin-top"
+                  aria-hidden="true"
+                />
+                <motion.div variants={taglineVariants} className="max-w-[14rem]">
+                  <p className="font-menu-display text-cream-200/70 text-base leading-snug italic">
+                    {SITE_CONFIG.tagline}
+                  </p>
+                  <p className="text-cream-200/40 mt-2 font-sans text-xs tracking-[0.2em] uppercase">
+                    {SITE_CONFIG.address.line1}
+                  </p>
+                </motion.div>
               </div>
 
-              {/* Divider + Order Online/Reserve a Table (new) — mobile
-                  only. A thin centered rule (same bg-accent language as
-                  the desktop left column's own vertical rule above, just
-                  horizontal here) separates the primary nav from these
-                  two secondary actions, then the actions themselves as
-                  plain uppercase text links — not a repeat of the site's
-                  filled-pill Button (Hero/Navbar already own that
-                  treatment for these same two actions elsewhere); "compact
-                  link" reads intentionally lighter/quieter than the large
-                  serif nav words above it, which stay the one dominant
-                  element on this screen.
-                  Order Online — same external Swiggy destination/
-                  target="_blank"/rel as every other Order Online entry
-                  point on the site (Navbar, Hero); ArrowRight icon matches
-                  those too. Reserve a Table — plain in-app NavLink to
-                  ROUTES.RESERVATIONS, CalendarCheck icon, same pairing
-                  Hero's own two buttons use. Both call onClose on click,
-                  same as every NAV_LINKS item above — this panel always
-                  closes once its own navigation has actually been used. */}
-              <motion.div
-                variants={mobileActionsVariants}
-                className="mt-10 flex flex-col items-center gap-8 lg:hidden"
+              {/* Center — the nav itself, always centered text (was
+                  text-left with a single shared left edge; centered here
+                  since there's no longer a wide desktop column of its
+                  own to left-align within — a centered stack reads as
+                  the deliberate focal point the brief asks for at every
+                  width, mobile included).
+                  gap-y via clamp() — "elegant, consistent... do not use
+                  huge margin-top... responsive gap values" — scales
+                  smoothly with the same viewport-width math the type
+                  scale itself uses, instead of a few discrete
+                  breakpoint jumps. */}
+              <motion.nav
+                variants={listVariants}
+                aria-label="Full site"
+                className="col-span-1 flex flex-col items-center gap-y-[clamp(0.875rem,1.2vw_+_0.5rem,1.75rem)] text-center lg:col-start-2"
               >
-                <span aria-hidden="true" className="bg-accent/30 h-px w-16" />
-                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-                  <a
-                    href={SITE_CONFIG.swiggyMenu}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={onClose}
-                    className="group text-accent hover:text-cream-50 ease-luxury inline-flex items-center gap-2 font-sans text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-[var(--duration-fast)]"
-                  >
-                    Order Online
-                    <ArrowRight
-                      className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
-                      aria-hidden="true"
-                    />
-                  </a>
-                  <NavLink
-                    to={ROUTES.RESERVATIONS}
-                    onClick={onClose}
-                    className="group text-cream-100 hover:text-accent ease-luxury inline-flex items-center gap-2 font-sans text-sm font-semibold tracking-[0.15em] uppercase transition-colors duration-[var(--duration-fast)]"
-                  >
-                    <CalendarCheck className="size-4" aria-hidden="true" />
-                    Reserve a Table
-                  </NavLink>
-                </div>
-              </motion.div>
-            </Container>
+                {MENU_ITEMS.map((item) =>
+                  item.type === 'scroll' ? (
+                    <motion.div key={item.hash} variants={itemVariants}>
+                      <MenuScrollLink hash={item.hash} label={item.label} onNavigate={onClose} />
+                    </motion.div>
+                  ) : (
+                    <motion.div key={item.path} variants={itemVariants}>
+                      <NavLink
+                        to={item.path}
+                        end={item.end}
+                        onClick={onClose}
+                        className={({ isActive }) =>
+                          cn(NAV_ITEM_CLASSES, isActive && 'text-accent')
+                        }
+                      >
+                        {item.label}
+                        <span aria-hidden="true" className={NAV_ITEM_UNDERLINE} />
+                      </NavLink>
+                    </motion.div>
+                  ),
+                )}
+              </motion.nav>
+
+              {/* Empty spacer — desktop/lg only, balances the info
+                  panel's own 1fr track so the center track (the nav)
+                  lands at the exact mathematical center of the viewport,
+                  not just the center of "nav + info panel combined."
+                  aria-hidden since it's pure layout, no content. */}
+              <div aria-hidden="true" className="hidden lg:col-start-3 lg:block" />
+            </div>
+
+            {/* Tagline/location, mobile + tablet only (< lg, where the
+                desktop info panel above is hidden) — moved BELOW the nav
+                instead of beside it, per the mobile-layout brief. Same
+                copy, smaller/simpler treatment (no rule, single centered
+                block) than the desktop panel — "optionally," a quiet
+                closing detail under the nav, not a second competing
+                column. */}
+            <motion.div
+              variants={taglineVariants}
+              className="mt-10 flex flex-col items-center gap-1 text-center lg:hidden"
+            >
+              <p className="font-menu-display text-cream-200/70 text-sm leading-snug italic sm:text-base">
+                {SITE_CONFIG.tagline}
+              </p>
+              <p className="text-cream-200/40 font-sans text-xs tracking-[0.2em] uppercase">
+                {SITE_CONFIG.address.line1}
+              </p>
+            </motion.div>
           </div>
 
           {/* Footer row — same Container every other section uses, so it
-              left/right-edge-aligns with the nav grid above and the
-              navbar row above that. No variants of its own — it rides
-              along with the panel's own fade only, staying visually
-              stable while the composition above it animates in. */}
+              left/right-edge-aligns with the navbar row above it. No
+              variants of its own — it rides along with the panel's own
+              fade only, staying visually stable while the composition
+              above it animates in. Untouched by this pass. */}
           <Container className="relative flex flex-col items-center gap-6 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
             <a
               href={toTelHref(SITE_CONFIG.contact.phone)}

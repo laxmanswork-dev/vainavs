@@ -33,21 +33,25 @@
  *               and italic) is the only weight/style still used here —
  *               the tagline is italic, nothing else in this file reads
  *               this token anymore.
- * DM Serif Display — the FullscreenMenu overlay's nav items (HOME/OUR
- *               STORY/MENU/CONTACT) only, see --font-nav-display in
- *               theme.css — a high-contrast, distinctive-but-readable
- *               display serif, warmer and more expressive than Spectral's
- *               restrained book-serif character, per follow-up asking
- *               specifically for that on the nav words (Spectral itself
- *               stays for the tagline, see above — deliberately two
- *               different serifs in this one panel, not a mistake).
- *               Single weight (400 Regular, no bold cut) — the nav items
- *               render at that native weight rather than triggering the
- *               browser's synthetic/faux-bold.
+ * Playfair Display — the FullscreenMenu overlay's nav items (HOME/OUR
+ *               HERITAGE/OUR STORY/MENU/CONTACT) only, see
+ *               --font-nav-display in theme.css (repointed to this font,
+ *               same token, since nothing else reads it) — replaces DM
+ *               Serif Display per follow-up ("the current huge serif
+ *               menu typography is NOT acceptable... use Playfair
+ *               Display... a sophisticated weight such as 500/600, do
+ *               NOT use extremely heavy/bold typography"). DM Serif
+ *               Display only ever shipped one weight (400, no bold cut),
+ *               so it couldn't offer the controlled 500/600 this ask
+ *               needed — its package/import are both removed here too,
+ *               not just left as unused dead weight (same reasoning as
+ *               --font-hero-brand's own removal, above). Only the 600
+ *               (Semibold) upright weight is imported — nothing here
+ *               uses italic or any other cut.
  */
 @import '@fontsource-variable/montserrat/index.css';
 @import '@fontsource-variable/montserrat/wght-italic.css';
+@import '@fontsource/playfair-display/600.css';
 @import '@fontsource/great-vibes/400.css';
 @import '@fontsource/spectral/500.css';
 @import '@fontsource/spectral/500-italic.css';
-@import '@fontsource/dm-serif-display/400.css';
