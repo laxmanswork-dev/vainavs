@@ -464,13 +464,35 @@ export function Hero() {
                   a Table → come eat it), same as the navbar's own Order
                   Now button (also ROUTES.RESERVATIONS).
                   CalendarCheck (was Heart, briefly) — reverted for the same
-                  reason as Explore Menu's icon above. */}
+                  reason as Explore Menu's icon above.
+                  "Reserve a Table" -> "Reservations Coming Soon" ->
+                  "Reservations" across two follow-ups — the café doesn't
+                  have seating capacity for online booking yet, so this
+                  can't say "Reserve a Table" as if a table can actually be
+                  booked right now. The first fix spelled that limitation
+                  out directly in the button ("Reservations Coming Soon"),
+                  but the very next follow-up asked for the opposite tone —
+                  a confident, quiet secondary action reading "Reservations"
+                  alone, with the unavailable-state messaging moved entirely
+                  onto the page it links to (see pages/Reservations.jsx) —
+                  the homepage shouldn't announce a limitation, just offer
+                  the action. Same position/shape/border/hierarchy/icon/
+                  hover as the original "Reserve a Table" — variant
+                  stays outlineInverse specifically because that's already
+                  this site's own "clearly secondary, next to a solid-fill
+                  sibling" treatment (see Button.jsx), so no extra styling
+                  was needed to make this read as quieter than Explore
+                  Menu. No responsive text-size override either — unlike
+                  the longer "Reservations Coming Soon" wording this
+                  briefly needed, plain "Reservations" is shorter than the
+                  original "Reserve a Table" and fits at every breakpoint
+                  the same way that did. */}
               <Button to={ROUTES.RESERVATIONS} variant="outlineInverse" size="lg">
                 <CalendarCheck
-                  className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
+                  className="size-4 shrink-0 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
                   aria-hidden="true"
                 />
-                Reserve a Table
+                Reservations
               </Button>
             </motion.div>
           </motion.div>
