@@ -31,8 +31,9 @@ import { videoCoffeePour } from '@assets'
  * very first CompactCapitalN was) — simpler, and correct for what's
  * being asked this time.
  * `stroke="currentColor"` inherits text-accent, same copper/gold as
- * every other letter — no new color introduced. h-[0.78em] (unchanged)
- * keeps its rendered height in line with the surrounding script text —
+ * every other letter — no new color introduced. h-[0.78em], viewBox, and
+ * overall proportions/size are unchanged — this pass touches weight and
+ * the exit stroke's own shape only, not how big or where the glyph sits.
  * same sizing convention as both earlier versions, so nothing about how
  * this scales across breakpoints needed to change, only the path/stroke
  * inside the same viewBox-relative box. Being a vector path (not a
@@ -40,7 +41,21 @@ import { videoCoffeePour } from '@assets'
  * there's no responsive variant on this component at all, just one
  * fixed path scaled uniformly by the shared h-[0.78em]/w-auto sizing —
  * its proportions and character are identical at every breakpoint.
- */
+ *
+ * strokeWidth 11 -> 10 and the exit curve lengthened/eased slightly (was
+ * a short, tight C82,116 85,118 89,119 flick; now a longer, gentler
+ * C83,117 87,121 90,124) — per follow-up ("reduce the visual dominance
+ * of the N... make its connection to the following letters feel more
+ * natural"), a deliberately small, two-part polish, not a re-draw. A
+ * touch thinner reads as slightly less heavy against the surrounding
+ * "av's" text (Great Vibes' own strokes are thin); a longer, softer
+ * exit taper reads more like a pen trailing off toward the next letter
+ * than a stroke that stops abruptly right where it started curving. The
+ * entry flick (leading into the N from "Vai") and every straight
+ * segment (both vertical stems, the diagonal) are byte-for-byte
+ * unchanged — still upright/straight per the earlier "final typography
+ * fix" feedback that ruled out a bigger sweep/loop; only the two values
+ * above moved. */
 function SignatureCapitalN(props) {
   return (
     <svg
@@ -51,10 +66,10 @@ function SignatureCapitalN(props) {
       {...props}
     >
       <path
-        d="M13,10 C15,15 18,19 20,24 L20,116 L80,20 L80,114 C82,116 85,118 89,119"
+        d="M13,10 C15,15 18,19 20,24 L20,116 L80,20 L80,114 C83,117 87,121 90,124"
         fill="none"
         stroke="currentColor"
-        strokeWidth="11"
+        strokeWidth="10"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -385,10 +400,17 @@ export function Hero() {
                     (monoline stroke again, not the sweeping version's
                     filled taper), while still keeping a small handwritten
                     flick at the entry/exit so it doesn't just become the
-                    original plain compact N again. Same treatment every
-                    time: only this one glyph changes, "Vai"/"av's" are
-                    completely untouched plain text in this same
-                    font-script span. */}
+                    original plain compact N again.
+                    Third pass (subtle polish, not a redraw): a follow-up
+                    asked to slightly reduce this N's visual dominance and
+                    make its exit feel more naturally connected into
+                    "av's" right after it — see SignatureCapitalN's own
+                    comment for the exact strokeWidth/curve values that
+                    moved; structure, size, and color are all still the
+                    same as the "final typography fix" pass above.
+                    Same treatment every time: only this one glyph
+                    changes, "Vai"/"av's" are completely untouched plain
+                    text in this same font-script span. */}
                 <span className="font-script text-accent mt-4 block text-7xl leading-[1.05] normal-case sm:mt-5 sm:text-8xl lg:mt-6 lg:text-9xl">
                   Vai
                   <SignatureCapitalN />
