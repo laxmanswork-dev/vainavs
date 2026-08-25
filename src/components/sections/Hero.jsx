@@ -488,8 +488,25 @@ export function Hero() {
                   variant stays outlineInverse, this site's own established
                   "clearly secondary, next to a solid-fill sibling"
                   treatment (see Button.jsx) — only the label, icon and
-                  destination changed. */}
-              <Button to={`${ROUTES.HOME}#our-story`} variant="outlineInverse" size="lg">
+                  destination changed.
+                  className="px-5" (new, was Button's own default lg px-7)
+                  — per a follow-up asking Our Story to read as clearly
+                  narrower/quieter than Explore Menu beside it, not just
+                  differently colored. Only the horizontal padding is
+                  overridden, on this one instance, via its own className
+                  (Button.jsx's shared size="lg" styles are untouched, so
+                  every other lg button on the site keeps its normal
+                  px-7). Height (h-12, from size="lg"), text size, border
+                  treatment, icon, alignment and hover/tap animation are
+                  all completely unchanged — the shorter word "Our Story"
+                  plus this tighter padding is the entire size difference,
+                  nothing else about the button was touched. */}
+              <Button
+                to={`${ROUTES.HOME}#our-story`}
+                variant="outlineInverse"
+                size="lg"
+                className="px-5"
+              >
                 Our Story
                 <ArrowRight
                   className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
