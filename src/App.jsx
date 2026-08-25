@@ -2,10 +2,18 @@ import { Toaster } from 'react-hot-toast'
 import { ErrorBoundary } from '@components/common/ErrorBoundary'
 import { SmoothScrollProvider } from '@context/SmoothScrollProvider'
 import { AppRoutes } from '@routes/AppRoutes'
+import { BrandIntro } from '@components/common/BrandIntro'
 
 export default function App() {
   return (
     <ErrorBoundary>
+      {/* Mounted outside SmoothScrollProvider/Lenis on purpose — the intro
+          is a plain fixed-position overlay that locks native scroll
+          itself for its own short life (see BrandIntro.jsx), so it has no
+          dependency on the Lenis/GSAP scroll stack below. Sits above
+          every route/page from the very first paint, once per browser
+          tab session. */}
+      <BrandIntro />
       <SmoothScrollProvider>
         <AppRoutes />
         <Toaster
