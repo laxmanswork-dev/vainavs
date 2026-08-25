@@ -21,6 +21,36 @@ function FooterHeading({ children }) {
   )
 }
 
+/**
+ * Quick Links, with "Our Heritage" added between Home and Our Story — per
+ * follow-up, it was missing (NAV_LINKS itself only ever had 4 entries;
+ * this is the exact same gap Navbar.jsx and FullscreenMenu.jsx both had
+ * to work around for their own nav lists — see their own comments for the
+ * fuller history). Derived from NAV_LINKS (not a hand-typed duplicate of
+ * all 4 existing entries) so Home/Our Story/Menu/Contact stay wired to
+ * that single shared source; NAV_LINKS itself is left completely
+ * untouched rather than inserting into it directly — Navbar.jsx reads
+ * specific indices out of that array (NAV_LINKS[0], NAV_LINKS.slice(2))
+ * to build its own separate desktop link row, and inserting a new entry
+ * there would silently shift those indices and break it, despite this
+ * being a footer-only follow-up.
+ * `${ROUTES.HOME}#heritage` matches NAV_LINKS[1]'s own existing
+ * `${ROUTES.HOME}#our-story` pattern exactly — a real anchor already used
+ * site-wide (Home.jsx's own `id="heritage"` section), not a new URL.
+ * Plain <Link>, same as every other item here — no new scroll-specific
+ * component needed: ScrollToTop.jsx already handles landing on any
+ * `#hash` correctly (offset for the fixed navbar) on every route change,
+ * including a hash-only change while already on Home, which is exactly
+ * how "Our Story" already worked from this same footer before this
+ * follow-up — this is that identical, already-working pattern, just one
+ * more entry using it.
+ */
+const QUICK_LINKS = [
+  NAV_LINKS[0],
+  { label: 'Our Heritage', path: `${ROUTES.HOME}#heritage` },
+  ...NAV_LINKS.slice(1),
+]
+
 export function Footer() {
   const year = new Date().getFullYear()
   const [hours] = SITE_CONFIG.hours
@@ -65,7 +95,7 @@ export function Footer() {
         <div>
           <FooterHeading>Quick Links</FooterHeading>
           <ul className="space-y-3">
-            {NAV_LINKS.map((link) => (
+            {QUICK_LINKS.map((link) => (
               <li key={link.path}>
                 {/* font-medium added — sitewide typography pass: footer nav
                     links had no weight class (defaulting to regular/400);
@@ -89,8 +119,16 @@ export function Footer() {
             {hours.days.replace('Monday', 'Mon').replace('Sunday', 'Sun')}
           </p>
           <p className="text-cream-200/70 mt-1 text-sm">{hours.display}</p>
+          {/* "Good Food. Good Mood. Better Memories." -> "YOU'LL LOVE
+              SPENDING TIME HERE." per follow-up — text only; the exact
+              same classes as before (text-gold-300/80 mt-4 text-xs
+              italic) are untouched, per "use the existing footer
+              tagline typography/style." Written in literal caps in the
+              source (not a CSS uppercase transform) since that's exactly
+              how the follow-up itself specified the target string, and
+              this element had no existing transform to hook into. */}
           <p className="text-gold-300/80 mt-4 text-xs italic">
-            Good Food. Good Mood. Better Memories.
+            YOU&apos;LL LOVE SPENDING TIME HERE.
           </p>
         </div>
 

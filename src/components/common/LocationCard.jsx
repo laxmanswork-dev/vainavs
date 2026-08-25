@@ -107,6 +107,60 @@ export function LocationCard() {
           </span>
         </p>
 
+        {/* Fixes a real bug found by measurement: at `lg` (1024px), the
+            footer grid jumps from 3 columns to 6 (Footer.jsx's own
+            `sm:grid-cols-3 lg:grid-cols-6`), but this card's own column
+            stays `col-span-1` either way — 1-of-6 is much narrower than
+            1-of-3. This button's plain `w-full` forced it down to that
+            column's own width (as little as 94px at 1024px, measured)
+            regardless of whether its content (icon + "Get Directions" +
+            padding, ~176px minimum) actually fit — it doesn't, so the
+            icon and part of the text rendered outside the button's own
+            box.
+            First attempt: min-w-fit on the button. That kept the SVG
+            correctly inside the button's own box, but only by forcing
+            the button wider than the CARD around it — which has its own
+            `overflow-hidden` (needed for the map embed's rounded
+            corners above) and silently clipped the button's text down to
+            "GET DIREC...". Checked whether that only bit at exactly
+            1024px — it doesn't: the card's max-w-[280px] never gets its
+            full natural width back at ANY `lg`+ size, since Container
+            itself has a fixed max-width, so the same clipping was
+            confirmed still happening even at 1440px ("GET DIRECTION" with
+            the final S cut off).
+            Fix, take two: lg:whitespace-normal (was Button's own default
+            whitespace-nowrap, kept below `lg` where it already fits on
+            one line comfortably — 768/820px confirmed fine) is meant to
+            let the label wrap to two lines where there's not enough
+            width for one. On its own this still measured broken at
+            1024px though (confirmed) — because "Get Directions" here is
+            a bare text node, not its own element, so as an (implicit)
+            flex child inside this row it still defaults to
+            `min-width:auto` same as any flex item does, same lesson
+            learned fixing the navbar's own brand text earlier: allowing
+            wrapping doesn't help if the item is still barred from
+            shrinking below its own unwrapped width in the first place.
+            Wrapping "Get Directions" in its own <span> below with
+            lg:min-w-0 lg:flex-1 fixes that — now it CAN actually shrink
+            (and therefore wrap) within the row. lg:h-auto + lg:py-2
+            (Button's own size="sm" is a fixed h-9, sized for exactly one
+            line) lets the button's height grow to fit two lines when it
+            needs to, instead of the second line spilling past a
+            fixed-height pill. Even with wrapping enabled, the button's
+            own default px-5 padding still ate nearly all the ~94px of
+            available width at 1024px, leaving too little for the two
+            wrapped lines and truncating the final "S" — confirmed by
+            comparing the span's own scrollWidth/clientWidth. Shrinking
+            the padding (lg:px-0.5), font-size (lg:text-[10px]) and
+            letter-spacing (lg:tracking-tight) in small, measured steps
+            until scrollWidth === clientWidth exactly closed that last
+            gap, so "GET" / "DIRECTIONS" now wraps cleanly with zero
+            truncation — confirmed at every required breakpoint,
+            768px-1920px, single line where it fits, clean two-line wrap
+            only at 1024px where the column is narrowest. Not a layout/
+            column change — this card's own column span is completely
+            untouched; only how the button's own label behaves when it's
+            tight on room changes. */}
         <Button
           href={mapUrl}
           target="_blank"
@@ -114,10 +168,15 @@ export function LocationCard() {
           aria-label="Get directions to Vainav's Cafeteria on Google Maps"
           variant="accent"
           size="sm"
-          className="mt-3.5 w-full"
+          className="mt-3.5 w-full lg:h-auto lg:px-0.5 lg:py-2 lg:text-[10px] lg:tracking-tight lg:whitespace-normal"
         >
-          <Navigation className="size-3.5" aria-hidden="true" />
-          Get Directions
+          {/* shrink-0 (new) — matches every other icon in this same file/
+              Footer.jsx (MapPin, Phone both already have it) so this one
+              is protected the same way: it should never be flex-shrunk
+              smaller than its own size-3.5, and stays vertically centered
+              against the label whether that label is one line or two. */}
+          <Navigation className="size-3.5 shrink-0" aria-hidden="true" />
+          <span className="lg:min-w-0 lg:flex-1">Get Directions</span>
         </Button>
 
         <a

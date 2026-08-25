@@ -44,8 +44,13 @@ export const SITE_CONFIG = {
 
   // `opens`/`closes` are 24h HH:MM (schema.org/JSON-LD needs machine-readable
   // times); `display` is what actually renders in the Footer/Contact page.
+  // opens 10:00 -> 08:00 (display "10:00 AM" -> "8:00 AM") per follow-up —
+  // the café's real opening time changed; `opens` updated alongside
+  // `display` so the machine-readable JSON-LD (see utils/structuredData.js,
+  // which reads opens/closes directly) stays consistent with what's shown,
+  // not just the visible text. `closes`/`23:00`/"11:00 PM" unchanged.
   hours: [
-    { days: 'Monday - Sunday', opens: '10:00', closes: '23:00', display: '10:00 AM - 11:00 PM' },
+    { days: 'Monday - Sunday', opens: '08:00', closes: '23:00', display: '8:00 AM - 11:00 PM' },
   ],
 
   social: {
