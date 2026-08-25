@@ -237,18 +237,33 @@ export function Navbar() {
           >
             {/* Logo's own badge is a self-contained dark circle (bg-
                 espresso-950 + gold ring) regardless of what it sits on —
-                unchanged. -translate-y-2 keeps it at the same position the
-                last pass left it at (was riding on the row's own shared
-                transform, now applied directly here since that shared
-                transform is gone — links/actions move further per
-                follow-up, logo intentionally does not).
-                The logo is taller than the 72px bar (see Logo.jsx), so
-                true centering means a small, even overflow on both sides:
-                a few px spill below the bar (harmless, into the page) and
-                a few px crop against the very top of the emblem's own
-                ornamental tip (the browser viewport's own edge, not a CSS
-                clip) — unchanged from before, not made worse by this
-                follow-up since the logo isn't moving further.
+                unchanged.
+                lg:-translate-y-2 (was unconditional -translate-y-2 on
+                this div — see the "up this" history below) — per
+                follow-up, the whole mobile row (logo, brand text, ORDER,
+                icon, hamburger) was sitting visibly too high, not evenly
+                centered in the 72px bar. That upward nudge was tuned for
+                the ORIGINAL, much larger mobile logo (80-96px, taller
+                than the bar itself, needing an intentional offset to
+                balance its own overflow — see the note below); now that
+                the logo's mobile size is much smaller (clamp() down to
+                as little as 44px, see its own comment further down), it
+                comfortably fits inside the bar and plain `items-center`
+                centers it correctly on its own — the extra upward push
+                was no longer wanted, just inherited. Scoping it to `lg`
+                and up restores the exact original offset there, where
+                the logo is still its original larger size and still
+                needs it — desktop is unchanged.
+                The logo is taller than the 72px bar AT `lg` AND UP ONLY
+                now (see Logo.jsx / the size clamp below), so true
+                centering there still means a small, even overflow on
+                both sides: a few px spill below the bar (harmless, into
+                the page) and a few px crop against the very top of the
+                emblem's own ornamental tip (the browser viewport's own
+                edge, not a CSS clip) — unchanged from before at `lg`+;
+                on mobile the smaller logo no longer overflows the bar at
+                all, so there's nothing to balance there in the first
+                place.
                 Plain (no `href`) — the Vainav's logo stays a Home link;
                 Swiggy ordering is its own separate icon at the right of
                 the bar (below), not this logo. Logo.jsx's `href` prop
@@ -300,10 +315,20 @@ export function Navbar() {
                 justify-self-start is a no-op below `lg` (flexbox ignores
                 it) and restores the original desktop alignment once
                 `lg:grid` applies above. */}
-            <div className="flex min-w-[clamp(50px,8vw_+_24px,76px)] -translate-y-2 items-center gap-1.5 justify-self-start sm:min-w-[104px] sm:gap-2 lg:min-w-0">
+            <div className="flex min-w-[clamp(50px,8vw_+_24px,76px)] items-center gap-1.5 justify-self-start sm:min-w-[104px] sm:gap-2 lg:min-w-0 lg:-translate-y-2">
               <Logo className="size-[clamp(44px,8vw_+_18px,70px)] sm:size-24" />
+              {/* SITE_CONFIG.name ("Vainav's Cafeteria") -> shortName
+                  ("Vainav's") per follow-up — the mobile navbar's own
+                  brand text specifically, not the hero heading (Hero.jsx
+                  still renders the full "Vainav's Cafeteria", untouched)
+                  and not the Order button's own aria-label just below in
+                  this file (still the full name — that's an
+                  accessibility label, not the visible text this
+                  follow-up is about). shortName was already sitting in
+                  site.js for exactly this kind of shorter-context use;
+                  no new string introduced. */}
               <span className="min-w-0 flex-1 truncate text-[clamp(10px,3.5vw,14px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
-                {SITE_CONFIG.name}
+                {SITE_CONFIG.shortName}
               </span>
             </div>
 
@@ -367,10 +392,15 @@ export function Navbar() {
               ))}
             </ul>
 
-            {/* -translate-y-2 — matches the logo's and the links' own
-                offset above (was -translate-y-4), so the whole row now
-                shares one exact baseline. See the links `<ul>`'s own
-                comment above for why.
+            {/* lg:-translate-y-2 (was unconditional -translate-y-2 on
+                this div — matches the logo+text div's own change just
+                above, same reason: per follow-up, this whole row sat
+                visibly too high on mobile, not evenly centered in the
+                bar. Scoped to `lg` and up, where it still matches the
+                links `<ul>`'s own offset above (see that comment for
+                why) — desktop's shared baseline across logo/links/
+                actions is completely unchanged; on mobile, plain
+                `items-center` now centers this row on its own.
                 gap-1.5 sm:gap-4 (was gap-3/sm:gap-4, no separate mobile
                 value) — per follow-up ("ORDER →" must show real text on
                 mobile, not just an icon), the CTA needs its label back
@@ -384,7 +414,7 @@ export function Navbar() {
                 (flexbox mode), never compressed; the logo+text group on
                 the left is the one that gives, never this side. No-op at
                 `lg` and up (grid items don't use flex-shrink). */}
-            <div className="flex shrink-0 -translate-y-2 items-center gap-1.5 justify-self-end sm:gap-4">
+            <div className="flex shrink-0 items-center gap-1.5 justify-self-end sm:gap-4 lg:-translate-y-2">
               {/* Restrained toasted-caramel (#b9783f) — a specific navbar
                   CTA color, one step more muted than the site's own
                   Caramel accent token, with ivory text. Only color is
