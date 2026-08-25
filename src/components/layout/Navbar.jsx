@@ -202,9 +202,37 @@ export function Navbar() {
               one-off patches.
               h-[4.5rem]/72px — Layout.jsx's `pt-[4.5rem]` and Hero.jsx's
               `calc(...-4.5rem)` both have to stay in sync with this exact
-              value — it's the fixed navbar's real height. */}
+              value — it's the fixed navbar's real height.
+              Layout is responsive now (new) — per follow-up adding
+              mobile brand text beside the logo. Below `lg` this is plain
+              flexbox, not the grid described above; `lg:grid
+              lg:grid-cols-[1fr_auto_1fr]` switches back to the exact
+              original grid at `lg` and up, where that centering math
+              applies — completely untouched there.
+              Why not extend the grid to handle mobile too (three separate
+              attempts, all reverted): CSS Grid's `auto`/`minmax(0,1fr)`
+              track sizing doesn't reliably let one column shrink down to
+              a NESTED item's real minimum (Logo's fixed size, several
+              layers in) while a sibling column stays fixed — one attempt
+              left the column's computed width narrower than the logo
+              itself, clipping it; another left it at its full untruncated
+              width regardless of available space, pushing Order
+              Online/hamburger off past the visible edge entirely. Both
+              were confirmed by actually measuring computed track widths
+              and element positions, not assumed.
+              Flexbox's shrink model is the standard, predictable tool for
+              exactly this "one sibling never shrinks, the other absorbs
+              all of it down to a nested minimum" pattern — `shrink-0` on
+              the actions div below guarantees Order Online/Swiggy/
+              hamburger always render at their full natural size, never
+              compressed; `justify-between` pins them to the right edge
+              with the logo+text group on the left, and the logo+text
+              div's own `min-w-0` (see its own comment below) lets it
+              absorb whatever shrinking is needed, cascading down to just
+              its text — never the logo — via that div's own nested flex
+              layout. */}
           <nav
-            className="grid h-[4.5rem] grid-cols-[1fr_auto_1fr] items-center gap-4"
+            className="flex h-[4.5rem] items-center justify-between gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:justify-normal"
             aria-label="Primary"
           >
             {/* Logo's own badge is a self-contained dark circle (bg-
@@ -226,8 +254,35 @@ export function Navbar() {
                 the bar (below), not this logo. Logo.jsx's `href` prop
                 still exists and still works if that ever changes — just
                 unused here now. */}
-            <div className="-translate-y-2 justify-self-start">
+            {/* Brand text (new) — mobile-only ("Order Online"/Swiggy/
+                hamburger still need their room at lg and up, and the
+                desktop link row already carries the brand context there).
+                min-w-[80px] sm:min-w-[104px] (not min-w-0 — tried,
+                reverted): `min-width:0` doesn't mean "let this shrink
+                down to whatever's actually inside it," it means "this
+                item's minimum is a literal zero" — a flex/grid parent
+                shrinking this row down under pressure has no way to know
+                Logo refuses to shrink below its real size, so it just
+                kept squeezing this div down past 80px, cropping the logo
+                (confirmed by measuring the rendered width fall below the
+                logo's own — 80px below `sm`, 96 at `sm`+, see Logo.jsx —
+                the moment min-w-0 was tried). An explicit min-width
+                matching the logo's own real size (+ this row's own
+                gap-2/8px) is a hard, honest floor instead: this div can
+                still shrink AS FAR AS that floor (letting the span's own
+                min-w-0 + flex-1 + truncate below absorb everything down
+                to the logo's edge), just never past it. lg:min-w-0
+                resets this back to unconstrained at `lg` and up, where
+                `lg:grid` takes over and there's no shrink pressure to
+                guard against in the first place.
+                justify-self-start is a no-op below `lg` (flexbox ignores
+                it) and restores the original desktop alignment once
+                `lg:grid` applies above. */}
+            <div className="flex min-w-[80px] -translate-y-2 items-center gap-2 justify-self-start sm:min-w-[104px] lg:min-w-0">
               <Logo />
+              <span className="min-w-0 flex-1 truncate font-sans text-sm font-semibold text-[#f4e8d8] lg:hidden">
+                {SITE_CONFIG.name}
+              </span>
             </div>
 
             {/* Desktop nav links — the site's PRIMARY visible navigation
@@ -302,8 +357,13 @@ export function Navbar() {
                 `ml-*` on the icon) that were layering visual-only fixes
                 on top of a baseline gap that was actually too tight —
                 per final-polish follow-up, cleaned up into this one
-                real, consistent value instead. */}
-            <div className="flex -translate-y-2 items-center gap-3 justify-self-end sm:gap-4">
+                real, consistent value instead.
+                shrink-0 (new) — guarantees Order Online/Swiggy/hamburger
+                always render at their full natural size below `lg`
+                (flexbox mode), never compressed; the logo+text group on
+                the left is the one that gives, never this side. No-op at
+                `lg` and up (grid items don't use flex-shrink). */}
+            <div className="flex shrink-0 -translate-y-2 items-center gap-3 justify-self-end sm:gap-4">
               {/* Restrained toasted-caramel (#b9783f) — a specific navbar
                   CTA color, one step more muted than the site's own
                   Caramel accent token, with ivory text. Only color is
@@ -329,15 +389,47 @@ export function Navbar() {
                   a transform on this button only, same technique as the
                   nav links' own -translate-x-6 above — nudges it right
                   without reflowing Swiggy/the hamburger beside it or
-                  touching the row's own gap. */}
+                  touching the row's own gap.
+                  Two-tier responsive sizing (new) — per follow-up adding
+                  the mobile brand text beside the logo: at 320-414px
+                  there genuinely isn't room for the logo, full brand
+                  text, AND this button at its full sm+ size without
+                  visual overlap (confirmed by measuring actual rendered
+                  element positions, not just page-level scrollWidth).
+                  Below `sm` (640px): icon-only, just the arrow — even a
+                  compact "ORDER"-text tier (tried, reverted) still left a
+                  real shortfall at the narrowest widths, AND handing
+                  "ORDER" back its own text at some earlier breakpoint
+                  before `sm` produced a worse regression: the brand text
+                  would visibly SHRINK again on wider phones than on
+                  narrower ones (this button reclaiming room right as the
+                  screen grew), which read as broken. Full-natural-size
+                  jump straight from icon-only to "ORDER ONLINE" at `sm`
+                  is monotonic instead — brand text only ever gets MORE
+                  room as the viewport grows, never less.
+                  `sm` and up: unchanged, full "ORDER ONLINE" + arrow —
+                  this button, Swiggy icon and hamburger stay
+                  pixel-identical there, same as always.
+                  aria-label (new) — with "Order Online" visually hidden
+                  below `sm`, the only remaining visible content is the
+                  arrow icon, which is `aria-hidden` (it's decorative, not
+                  the label) — without this the button would have NO
+                  accessible name at that size. Same wording as the
+                  Swiggy icon anchor's own aria-label just below, for
+                  consistency. aria-label always wins over visible text
+                  content for the accessible name, so setting it
+                  unconditionally here (not just below `sm`) is safe and
+                  doesn't cause any double-announcement at `sm`+ where
+                  "Order Online" is also visible. */}
               <Button
                 href={SITE_CONFIG.swiggyMenu}
                 target="_blank"
                 rel="noopener noreferrer"
                 size="sm"
-                className="translate-x-3 bg-[#b9783f] px-5 text-[#f4e8d8] hover:bg-[#a3692f]"
+                aria-label={`Order ${SITE_CONFIG.name} on Swiggy (opens in a new tab)`}
+                className="translate-x-3 bg-[#b9783f] px-2.5 text-[#f4e8d8] hover:bg-[#a3692f] sm:px-5"
               >
-                Order Online
+                <span className="hidden sm:inline">Order&nbsp;Online</span>
                 <ArrowRight
                   className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
                   aria-hidden="true"
