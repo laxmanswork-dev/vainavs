@@ -317,18 +317,31 @@ export function Navbar() {
                 `lg:grid` applies above. */}
             <div className="flex min-w-[clamp(50px,8vw_+_24px,76px)] items-center gap-1.5 justify-self-start sm:min-w-[104px] sm:gap-2 lg:min-w-0 lg:-translate-y-2">
               <Logo className="size-[clamp(44px,8vw_+_18px,70px)] sm:size-24" />
-              {/* SITE_CONFIG.name ("Vainav's Cafeteria") -> shortName
-                  ("Vainav's") per follow-up — the mobile navbar's own
+              {/* SITE_CONFIG.name ("Vainav's Cafeteria") -> "VaiNav's"
+                  (hardcoded here, not SITE_CONFIG.shortName's own
+                  "Vainav's") per follow-up — the mobile navbar's own
                   brand text specifically, not the hero heading (Hero.jsx
-                  still renders the full "Vainav's Cafeteria", untouched)
-                  and not the Order button's own aria-label just below in
-                  this file (still the full name — that's an
-                  accessibility label, not the visible text this
-                  follow-up is about). shortName was already sitting in
-                  site.js for exactly this kind of shorter-context use;
-                  no new string introduced. */}
-              <span className="min-w-0 flex-1 truncate text-[clamp(10px,3.5vw,14px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
-                {SITE_CONFIG.shortName}
+                  still renders "Vai" + its own capital-N SVG + "av's",
+                  untouched — this is a plain-text echo of that same
+                  capitalization, not a shared value with it) and not the
+                  Order button's own aria-label just below in this file
+                  (still the full "Vainav's Cafeteria" — an accessibility
+                  label, not the visible text this follow-up is about).
+                  Hardcoded rather than routing through
+                  SITE_CONFIG.shortName (which stays "Vainav's",
+                  untouched) since that constant is general site config,
+                  not specifically this one stylized navbar string — this
+                  keeps the change scoped to exactly this file, as asked.
+                  text-[clamp(18px,2.2vw_+_10.5px,19px)] (was
+                  clamp(10px,3.5vw,14px)) — per follow-up, "target
+                  approximately 18-19px on mobile" (the explicit number
+                  given, taken as authoritative over the same follow-up's
+                  own "increase by 1-2px" estimate of the prior size,
+                  which didn't actually match this span's real computed
+                  range). Confirmed by measurement to still fit without
+                  overlap or wrapping at 320-430px, same as before. */}
+              <span className="min-w-0 flex-1 truncate text-[clamp(18px,2.2vw_+_10.5px,19px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
+                VaiNav&apos;s
               </span>
             </div>
 
