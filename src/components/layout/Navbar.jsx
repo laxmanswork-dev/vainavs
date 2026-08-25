@@ -254,25 +254,57 @@ export function Navbar() {
                 the bar (below), not this logo. Logo.jsx's `href` prop
                 still exists and still works if that ever changes — just
                 unused here now. */}
-            {/* Brand text beside the logo (tried, reverted per follow-up
-                — "I do not want 'Vainav's...' text beside the logo on
-                mobile, the logo itself already contains the branding").
-                Back to just the logo alone, same as before that pass —
-                the min-w-[80px]/gap-2/truncating-span machinery that
-                existed only to fit that text is gone with it; a single
-                non-shrinking Logo doesn't need any of that. Order
-                Online's own icon-only-below-`sm` treatment and the outer
-                nav's flex(<lg)/grid(lg+) split (see the nav element's own
-                comment above) both stay exactly as they are — those
-                fix a real, separate, pre-existing space deficit between
-                the logo and Order Online/Swiggy/hamburger at narrow
-                widths that has nothing to do with this text (confirmed
-                by measurement in that earlier pass: it was already
-                there before any brand text existed), so removing the
-                text doesn't remove the reason those two still need to
-                stay. */}
-            <div className="-translate-y-2 justify-self-start">
-              <Logo />
+            {/* Brand text beside the logo (back again — per follow-up,
+                the brand name must always be visibly present on mobile,
+                truncating gracefully only at the very narrowest widths,
+                never hidden/opacity-0/removed).
+                clamp()-based fluid sizing (logo, this div's own min-w
+                floor, and the span's font-size below), not discrete
+                Tailwind breakpoint tiers — tried tiers first (a
+                min-[375px]: jump) and reverted: the logo's own +12px
+                jump at that single breakpoint outpaced how much extra
+                viewport width had actually been gained by then, so the
+                brand text visibly got SHORTER right at 375px than it was
+                at 374px (confirmed by measuring the span's rendered
+                width across that boundary) — the exact "text shrinks as
+                the screen grows" regression that reads as broken. A
+                continuous clamp() has no single instant where size can
+                jump ahead of the viewport, so this can't happen.
+                min-w on this div is NOT min-w-0. Lesson from the last
+                time this existed: `min-width:0` doesn't mean "shrink to
+                whatever's actually inside you," it means "your minimum
+                is a literal zero" — a flex parent squeezing this row
+                under pressure has no way to know Logo (shrink-0 below)
+                refuses to go smaller than its own real size, so min-w-0
+                here would just keep squeezing past it and crop the logo.
+                This floor — clamp(50px, 8vw + 24px, 76px), i.e. the
+                logo's own clamp() below + this row's gap-1.5/6px — is
+                what lets this div shrink AS FAR AS the logo's actual
+                current size (the span's own min-w-0 + flex-1 + truncate
+                absorbs everything beyond that) and never past it.
+                sm:min-w-[104px] lg:min-w-0 — at `sm` (640px) the clamp
+                would keep growing past where the logo itself stops (the
+                logo hard-caps at 96px via sm:size-24, matching Logo.jsx's
+                own original default exactly), so the floor is pinned to
+                match; lg:min-w-0 removes the constraint entirely once
+                `lg:grid` takes over above, where there's no shrink
+                pressure to guard against in the first place.
+                Logo's own size clamp (44px at 320px wide -> 70px at
+                640px wide, then a hard 96px at `sm` and up) is per
+                follow-up — "slightly reduce logo size" is one of the
+                explicitly sanctioned levers for very narrow screens; the
+                Logo component/artwork itself is completely untouched
+                (see Logo.jsx), only its rendered size here in the navbar
+                changes, and only below `sm` — sm:size-24 renders
+                byte-for-byte the same as before any of this existed.
+                justify-self-start is a no-op below `lg` (flexbox ignores
+                it) and restores the original desktop alignment once
+                `lg:grid` applies above. */}
+            <div className="flex min-w-[clamp(50px,8vw_+_24px,76px)] -translate-y-2 items-center gap-1.5 justify-self-start sm:min-w-[104px] sm:gap-2 lg:min-w-0">
+              <Logo className="size-[clamp(44px,8vw_+_18px,70px)] sm:size-24" />
+              <span className="min-w-0 flex-1 truncate text-[clamp(10px,3.5vw,14px)] font-semibold tracking-tight text-[#f4e8d8] lg:hidden">
+                {SITE_CONFIG.name}
+              </span>
             </div>
 
             {/* Desktop nav links — the site's PRIMARY visible navigation
@@ -339,21 +371,20 @@ export function Navbar() {
                 offset above (was -translate-y-4), so the whole row now
                 shares one exact baseline. See the links `<ul>`'s own
                 comment above for why.
-                gap-3/sm:gap-4 (was gap-2/3) — the row's one shared
-                baseline gap, now doing the real work of "comfortable but
-                not excessive" breathing room between Order Online,
-                Swiggy and the hamburger. Replaces two earlier ad-hoc
-                patches (a `translate-x` nudge on the button, an extra
-                `ml-*` on the icon) that were layering visual-only fixes
-                on top of a baseline gap that was actually too tight —
-                per final-polish follow-up, cleaned up into this one
-                real, consistent value instead.
+                gap-1.5 sm:gap-4 (was gap-3/sm:gap-4, no separate mobile
+                value) — per follow-up ("ORDER →" must show real text on
+                mobile, not just an icon), the CTA needs its label back
+                below `sm`, which needs the row tighter there to still
+                leave the logo+brand-text group its own honest floor (see
+                that div's own comment above) — sm:gap-4 is completely
+                unchanged, so tablet/desktop keep their exact original
+                breathing room.
                 shrink-0 (new) — guarantees Order Online/Swiggy/hamburger
                 always render at their full natural size below `lg`
                 (flexbox mode), never compressed; the logo+text group on
                 the left is the one that gives, never this side. No-op at
                 `lg` and up (grid items don't use flex-shrink). */}
-            <div className="flex shrink-0 -translate-y-2 items-center gap-3 justify-self-end sm:gap-4">
+            <div className="flex shrink-0 -translate-y-2 items-center gap-1.5 justify-self-end sm:gap-4">
               {/* Restrained toasted-caramel (#b9783f) — a specific navbar
                   CTA color, one step more muted than the site's own
                   Caramel accent token, with ivory text. Only color is
@@ -375,53 +406,53 @@ export function Navbar() {
                   rel="noopener noreferrer" — opens Swiggy in a new tab,
                   same as the Swiggy icon; this site's own tab never
                   navigates away.
-                  translate-x-3 (new) — per follow-up ("move this right"),
-                  a transform on this button only, same technique as the
-                  nav links' own -translate-x-6 above — nudges it right
-                  without reflowing Swiggy/the hamburger beside it or
-                  touching the row's own gap.
-                  Two-tier responsive sizing (new) — per follow-up adding
-                  the mobile brand text beside the logo: at 320-414px
-                  there genuinely isn't room for the logo, full brand
-                  text, AND this button at its full sm+ size without
-                  visual overlap (confirmed by measuring actual rendered
-                  element positions, not just page-level scrollWidth).
-                  Below `sm` (640px): icon-only, just the arrow — even a
-                  compact "ORDER"-text tier (tried, reverted) still left a
-                  real shortfall at the narrowest widths, AND handing
-                  "ORDER" back its own text at some earlier breakpoint
-                  before `sm` produced a worse regression: the brand text
-                  would visibly SHRINK again on wider phones than on
-                  narrower ones (this button reclaiming room right as the
-                  screen grew), which read as broken. Full-natural-size
-                  jump straight from icon-only to "ORDER ONLINE" at `sm`
-                  is monotonic instead — brand text only ever gets MORE
-                  room as the viewport grows, never less.
-                  `sm` and up: unchanged, full "ORDER ONLINE" + arrow —
-                  this button, Swiggy icon and hamburger stay
-                  pixel-identical there, same as always.
-                  aria-label (new) — with "Order Online" visually hidden
-                  below `sm`, the only remaining visible content is the
-                  arrow icon, which is `aria-hidden` (it's decorative, not
-                  the label) — without this the button would have NO
-                  accessible name at that size. Same wording as the
-                  Swiggy icon anchor's own aria-label just below, for
-                  consistency. aria-label always wins over visible text
-                  content for the accessible name, so setting it
-                  unconditionally here (not just below `sm`) is safe and
-                  doesn't cause any double-announcement at `sm`+ where
-                  "Order Online" is also visible. */}
+                  translate-x-3 — per earlier follow-up ("move this
+                  right"), a transform on this button only, same
+                  technique as the nav links' own -translate-x-6 above —
+                  nudges it right without reflowing Swiggy/the hamburger
+                  beside it or touching the row's own gap. sm:translate-x-3
+                  (scoped, was unconditional) — a transform doesn't affect
+                  layout/gap, only paint position, so at this pass's much
+                  tighter mobile size that same +12px nudge visually
+                  pushed the button's own right edge into the Swiggy icon
+                  next to it (confirmed by measuring both elements' real
+                  rects — a genuine ~4px overlap, not a false positive).
+                  It was always meant for the button's larger sm+ size/
+                  spacing, where there's room to absorb it — scoping it
+                  there removes the mobile overlap while leaving `sm` and
+                  up exactly as they were.
+                  Two-tier responsive sizing (rewritten per follow-up —
+                  "instead of showing ONLY an unexplained arrow, make the
+                  CTA understandable... prefer 'ORDER →'"). A previous
+                  pass went icon-only below `sm` to make room for the
+                  brand text beside the logo; that's no longer acceptable
+                  — a labeled CTA is now a hard requirement on mobile too,
+                  so the room has to come from elsewhere instead (a
+                  smaller logo + tighter row gap + this button's own
+                  tighter padding/icon size below `sm`, see the logo+text
+                  div and this row's own gap-1.5 above).
+                  Below `sm`: "ORDER" (no "Online" — the shorter word,
+                  same shortening technique already used for the brand
+                  name's own truncation), arrow at size-3.5. Text size is
+                  untouched either side of `sm` — Button's own size="sm"
+                  variant already sets text-xs unconditionally (not
+                  responsive), same as before this pass, so no text-size
+                  class needed here at all. `sm` and up: unchanged, full
+                  "Order Online" + size-4 arrow at px-5 — this button's
+                  sm+ rendering is byte-for-byte the same as before this
+                  pass. */}
               <Button
                 href={SITE_CONFIG.swiggyMenu}
                 target="_blank"
                 rel="noopener noreferrer"
                 size="sm"
                 aria-label={`Order ${SITE_CONFIG.name} on Swiggy (opens in a new tab)`}
-                className="translate-x-3 bg-[#b9783f] px-2.5 text-[#f4e8d8] hover:bg-[#a3692f] sm:px-5"
+                className="bg-[#b9783f] px-2.5 text-[#f4e8d8] hover:bg-[#a3692f] sm:translate-x-3 sm:px-5"
               >
+                <span className="sm:hidden">Order</span>
                 <span className="hidden sm:inline">Order&nbsp;Online</span>
                 <ArrowRight
-                  className="size-4 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1"
+                  className="size-3.5 transition-transform duration-[var(--duration-fast)] group-hover:translate-x-1 sm:size-4"
                   aria-hidden="true"
                 />
               </Button>
@@ -456,7 +487,7 @@ export function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Order on Swiggy (opens in a new tab)"
-                className="ease-luxury ml-2 size-7 shrink-0 overflow-hidden rounded-md opacity-80 transition-[transform,opacity] duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:opacity-100 sm:ml-3 sm:size-8"
+                className="ease-luxury ml-0.5 size-7 shrink-0 overflow-hidden rounded-md opacity-80 transition-[transform,opacity] duration-[var(--duration-fast)] hover:-translate-y-0.5 hover:opacity-100 sm:ml-3 sm:size-8"
               >
                 {/* scale-110 — the source asset's outer edge carries a
                     faint anti-aliased matte that reads as invisible on a
@@ -497,7 +528,7 @@ export function Navbar() {
                 aria-haspopup="true"
                 aria-expanded={isMenuOpen}
                 aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-                className="ease-luxury ml-1 flex size-10 shrink-0 flex-col items-center justify-center gap-1.5 text-[#f4e8d8] transition-colors duration-[var(--duration-fast)] hover:text-[#c98a52] sm:ml-1.5 sm:size-11"
+                className="ease-luxury ml-0 flex size-10 shrink-0 flex-col items-center justify-center gap-1.5 text-[#f4e8d8] transition-colors duration-[var(--duration-fast)] hover:text-[#c98a52] sm:ml-1.5 sm:size-11"
               >
                 <motion.span
                   className="block h-0.5 w-5 rounded-full bg-current"
