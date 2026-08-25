@@ -254,35 +254,25 @@ export function Navbar() {
                 the bar (below), not this logo. Logo.jsx's `href` prop
                 still exists and still works if that ever changes — just
                 unused here now. */}
-            {/* Brand text (new) — mobile-only ("Order Online"/Swiggy/
-                hamburger still need their room at lg and up, and the
-                desktop link row already carries the brand context there).
-                min-w-[80px] sm:min-w-[104px] (not min-w-0 — tried,
-                reverted): `min-width:0` doesn't mean "let this shrink
-                down to whatever's actually inside it," it means "this
-                item's minimum is a literal zero" — a flex/grid parent
-                shrinking this row down under pressure has no way to know
-                Logo refuses to shrink below its real size, so it just
-                kept squeezing this div down past 80px, cropping the logo
-                (confirmed by measuring the rendered width fall below the
-                logo's own — 80px below `sm`, 96 at `sm`+, see Logo.jsx —
-                the moment min-w-0 was tried). An explicit min-width
-                matching the logo's own real size (+ this row's own
-                gap-2/8px) is a hard, honest floor instead: this div can
-                still shrink AS FAR AS that floor (letting the span's own
-                min-w-0 + flex-1 + truncate below absorb everything down
-                to the logo's edge), just never past it. lg:min-w-0
-                resets this back to unconstrained at `lg` and up, where
-                `lg:grid` takes over and there's no shrink pressure to
-                guard against in the first place.
-                justify-self-start is a no-op below `lg` (flexbox ignores
-                it) and restores the original desktop alignment once
-                `lg:grid` applies above. */}
-            <div className="flex min-w-[80px] -translate-y-2 items-center gap-2 justify-self-start sm:min-w-[104px] lg:min-w-0">
+            {/* Brand text beside the logo (tried, reverted per follow-up
+                — "I do not want 'Vainav's...' text beside the logo on
+                mobile, the logo itself already contains the branding").
+                Back to just the logo alone, same as before that pass —
+                the min-w-[80px]/gap-2/truncating-span machinery that
+                existed only to fit that text is gone with it; a single
+                non-shrinking Logo doesn't need any of that. Order
+                Online's own icon-only-below-`sm` treatment and the outer
+                nav's flex(<lg)/grid(lg+) split (see the nav element's own
+                comment above) both stay exactly as they are — those
+                fix a real, separate, pre-existing space deficit between
+                the logo and Order Online/Swiggy/hamburger at narrow
+                widths that has nothing to do with this text (confirmed
+                by measurement in that earlier pass: it was already
+                there before any brand text existed), so removing the
+                text doesn't remove the reason those two still need to
+                stay. */}
+            <div className="-translate-y-2 justify-self-start">
               <Logo />
-              <span className="min-w-0 flex-1 truncate font-sans text-sm font-semibold text-[#f4e8d8] lg:hidden">
-                {SITE_CONFIG.name}
-              </span>
             </div>
 
             {/* Desktop nav links — the site's PRIMARY visible navigation
