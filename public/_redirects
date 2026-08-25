@@ -1,0 +1,31 @@
+# There is no admin panel, admin API, backend, or database anywhere in
+# this project (grepped the whole repo — confirmed) — it's a pure static
+# Vite/React build with no server-side code at all (see wrangler.jsonc's
+# own "no main field... no server-side script" comment). /admin returning
+# HTTP 200 was never an actual admin interface being exposed; it's this
+# SPA's own catch-all fallback (wrangler.jsonc's
+# not_found_handling: "single-page-application") rendering the exact
+# same branded "Page Not Found" page it renders for ANY unmatched path
+# (a typo'd URL, the old removed /reservations route, etc.) — necessary
+# so real in-app routes like /menu survive a hard refresh, but it also
+# means a scanner checking status codes alone can't tell "/admin" apart
+# from "/anything-else-that-doesn't-exist".
+#
+# Cloudflare's _redirects format can't serve content with a custom (e.g.
+# 404) status code — only true redirects (301/302/303/307/308) or a 200
+# proxy — so the fix here is to redirect these specific paths straight to
+# the homepage instead of letting them fall through to the SPA at all.
+# That removes any ambiguity for both scanners and real recon attempts:
+# nothing is ever served at these paths, full stop. Every other genuinely
+# unmatched path (real 404s, typos) keeps its normal SPA "Page Not Found"
+# experience — this list is intentionally narrow, not a blanket change to
+# 404 handling.
+# https://developers.cloudflare.com/pages/configuration/redirects/
+/admin         /   301
+/admin/*       /   301
+/wp-admin/*    /   301
+/wp-login.php  /   301
+/.env          /   301
+/.git/*        /   301
+/phpmyadmin/*  /   301
+/config/*      /   301

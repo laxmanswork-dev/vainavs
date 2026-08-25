@@ -1,0 +1,83 @@
+# Cloudflare-native security headers for this static Worker-Assets
+# deployment (see wrangler.jsonc — no server-side Worker script, so this
+# file is the only place these can be set; Cloudflare applies it at the
+# edge for every response, including `vite preview`/local dev CANNOT
+# show these — they only take effect on an actual `wrangler deploy`).
+# Syntax/limits (100 rules, 2000 chars/line, `!` removes a header):
+# https://developers.cloudflare.com/pages/configuration/headers/
+#
+# Every directive below was built from what this exact site actually
+# loads (checked directly in source, not guessed):
+#   scripts   — 100% same-origin, Vite-built JS. No inline <script>, no
+#               eval()/new Function() anywhere in src/ (grepped).
+#   styles    — Tailwind's compiled stylesheet (same-origin) PLUS every
+#               animation library this site uses (Framer Motion, GSAP,
+#               Lenis) sets the `style` attribute directly via JS, which
+#               is how CSS-in-JS animation fundamentally works — that
+#               requires 'unsafe-inline' in style-src (see its own line
+#               below for why this is the one accepted exception).
+#   fonts     — @fontsource packages, self-hosted npm deps, NOT Google
+#               Fonts/any CDN (see styles/fonts.css). font-src needs
+#               'self' AND data: — confirmed by actually loading the site
+#               under this policy (not assumed): some @fontsource glyph-
+#               subset files are inlined as data:font/woff(2);base64 URIs
+#               rather than separate file requests, and 'self' alone
+#               blocked those with real CSP violations in the console.
+#   images    — all bundled local assets (src/assets/images/**), plus a
+#               couple of small inline data-URI SVG textures set via
+#               CSS background-image (coffeeBeanTexture.js, BrandIntro's
+#               grain) — needs img-src 'self' data:.
+#   video     — hero/background .mp4 files, same-origin bundled assets.
+#   API calls — none exist yet (services/apiClient.js is unused scaffolding
+#               for a backend that doesn't exist — grepped, zero imports).
+#               connect-src 'self' only; widen this the day a real API
+#               is wired up.
+#   frames    — exactly one real use: the Google Maps embed iframe in
+#               both ContactVisit.jsx and LocationCard.jsx
+#               (https://maps.google.com/maps?...&output=embed). Nothing
+#               else on this site is ever framed. frame-src needs
+#               https://*.google.com, not just maps.google.com — that
+#               embed URL itself internally redirects/frames content from
+#               www.google.com (confirmed by an actual real CSP violation
+#               when tested with only maps.google.com allowed: "Framing
+#               'https://www.google.com/' violates... frame-src
+#               https://maps.google.com"). The wildcard covers that
+#               redirect chain (and any regional consent-screen subdomain
+#               Google might use) without guessing every exact hostname.
+#   WhatsApp/Swiggy/Maps short-link — all plain <a href> navigations
+#               (wa.me, swiggy.com, maps.app.goo.gl), never fetched or
+#               framed by this app — CSP's fetch/frame directives don't
+#               apply to ordinary link navigation, so none of these need
+#               a CSP allowance at all.
+#   Cloudflare — a plain proxied zone injects nothing into the page by
+#               default. static.cloudflareinsights.com is allow-listed
+#               defensively in script-src/connect-src ONLY because
+#               Cloudflare Web Analytics (an optional dashboard toggle,
+#               not code in this repo) auto-injects a beacon script from
+#               that exact origin if/when it's ever turned on — this
+#               allowance costs nothing if that feature stays off, and
+#               prevents a nasty silent breakage if someone enables it
+#               later. If Rocket Loader/Email Obfuscation are ever
+#               enabled in the dashboard, verify they still work — some
+#               versions want script-src 'unsafe-inline', which this
+#               policy deliberately does NOT grant (see script-src line).
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), midi=(), interest-cohort=()
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self'; connect-src 'self' https://static.cloudflareinsights.com; frame-src https://*.google.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed, content-addressed build output (Vite appends a content hash to
+# every filename under /assets/, e.g. index-Djlvzi2s.js) — safe to cache
+# forever since any real content change produces a new filename, unlike
+# the root/navigation HTML above which must always revalidate so a
+# deploy's updated headers/JS reach visitors promptly. The `!` line
+# removes the blanket rule's Cache-Control first — Cloudflare _headers
+# joins repeated headers with a comma rather than replacing them, which
+# would otherwise produce one malformed, self-contradictory value.
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
