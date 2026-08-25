@@ -5,7 +5,7 @@ import { logo } from '@assets'
 import { SITE_CONFIG } from '@constants/site'
 
 /**
- * VaiNav's signature brand intro — a one-time, ~4.5s reveal of the actual
+ * VaiNav's signature brand intro — a one-time, ~2s reveal of the actual
  * café logo, replacing the old generic pulsing-Coffee-icon loader (see
  * PageLoader.jsx, which shows the real logo instead of that icon for its
  * own, much shorter, code-split-chunk fallback role — this component is
@@ -29,16 +29,15 @@ import { SITE_CONFIG } from '@constants/site'
  * naturally responsive) followed by one restrained light pass once fully
  * visible.
  *
- * Stage timeline (full motion):
- *   background (0-800ms)    — solid terracotta fill, nothing else yet
- *   ticks      (800-1500ms) — (no longer renders anything — see above;
- *                              kept as a named timer checkpoint only so
- *                              the reveal/hold/exit timing below didn't
- *                              need to shift when the ticks themselves
- *                              were removed)
- *   reveal     (1500-3200ms)— logo wipes in top-to-bottom (1.7s)
- *   hold       (3200-3800ms)— logo settled, one subtle light pass crosses it
- *   exit       (3800-4500ms)— whole overlay fades, homepage shows through
+ * Stage timeline (full motion) — was ~4.5s total across 5 stages; per
+ * follow-up ("it need to come quickly") compressed to ~2s. Dropped the
+ * separate 'ticks' stage entirely rather than just speeding it up, since
+ * it had no visual consumer left once the diamond ticks themselves were
+ * removed (see above) — one less no-op timer:
+ *   background (0-300ms)    — solid terracotta fill, nothing else yet
+ *   reveal     (300-1200ms) — logo wipes in top-to-bottom (0.9s)
+ *   hold       (1200-1600ms)— logo settled, one quick light pass crosses it
+ *   exit       (1600-2000ms)— whole overlay fades, homepage shows through
  * See the reduced-motion branch below for the short static/fade path.
  *
  * Runs once per browser tab session (sessionStorage flag) — refreshing or
@@ -46,11 +45,11 @@ import { SITE_CONFIG } from '@constants/site'
  */
 const SESSION_KEY = 'vainavs-intro-shown'
 
-const STAGES = ['background', 'ticks', 'reveal', 'hold', 'exit']
+const STAGES = ['background', 'reveal', 'hold', 'exit']
 const EASE_IN_OUT = [0.65, 0, 0.35, 1] // = --ease-luxury
 
-const TIMING = { ticks: 800, reveal: 1500, hold: 3200, exit: 3800, done: 4500 }
-const REDUCED_TIMING = { reveal: 50, hold: 550, exit: 1050, done: 1450 }
+const TIMING = { reveal: 300, hold: 1200, exit: 1600, done: 2000 }
+const REDUCED_TIMING = { reveal: 50, hold: 400, exit: 750, done: 1000 }
 
 // Very faint static film-grain — a single fractalNoise SVG tile, not
 // animated (zero per-frame cost). Kept intentionally low-opacity per
@@ -92,7 +91,10 @@ export function BrandIntro() {
 
   const reached = (name) => STAGES.indexOf(stage) >= STAGES.indexOf(name)
   const exiting = stage === 'exit'
-  const exitMs = prefersReducedMotion ? 0.4 : 0.7
+  // Matches each timing table's own exit->done gap exactly (0.4s / 0.25s)
+  // so the fade actually finishes before setVisible(false) unmounts it,
+  // rather than getting cut off mid-fade.
+  const exitMs = prefersReducedMotion ? 0.25 : 0.4
 
   return (
     <motion.output
@@ -142,7 +144,7 @@ export function BrandIntro() {
             clipPath: reached('reveal') ? 'inset(0% 0% 0% 0%)' : 'inset(0% 0% 100% 0%)',
           }}
           transition={{
-            duration: prefersReducedMotion ? 0.5 : 1.7,
+            duration: prefersReducedMotion ? 0.5 : 0.9,
             ease: EASE_IN_OUT,
           }}
         >
@@ -171,7 +173,7 @@ export function BrandIntro() {
               aria-hidden="true"
               initial={{ left: '-35%' }}
               animate={{ left: reached('hold') ? '120%' : '-35%' }}
-              transition={{ duration: 0.6, ease: EASE_IN_OUT, delay: 0.1 }}
+              transition={{ duration: 0.35, ease: EASE_IN_OUT, delay: 0.05 }}
             />
           )}
         </motion.div>
