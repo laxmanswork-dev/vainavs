@@ -249,15 +249,12 @@ export function Hero() {
                   reads as a distinct step rather than two same-weight
                   headlines plus a stray signature:
 
-                  1. "You'll Love Spending Time Here." (was "Time Tastes
-                     Better At", then briefly "Come. Sit With Us.", "Good
-                     Things Start Here.", "A Break Can Do Wonders.",
-                     "Welcome To Your Happy Place.", "The Extra Hours
-                     You'll Love Spending Here" — that last one needed a
-                     hard <br/> to avoid feeling too long as one line; this
-                     one's short enough to drop back to a single line) —
-                     copy swapped per follow-up, styling untouched.
-                     SECONDARY EYEBROW. Dropped
+                  1. "Your New Favorite Spot" (through several earlier
+                     taglines, each swapped per its own follow-up, most
+                     recently the one this replaces — copy swapped again
+                     per the latest follow-up, styling untouched every
+                     time; short enough to stay a single line, same as
+                     its predecessor). SECONDARY EYEBROW. Dropped
                      from text-lg/2xl/4xl (was nearly headline-scale, a
                      leftover from before it took over the old Kicker's
                      lead-in role) down to text-sm/base/lg — genuinely
@@ -323,7 +320,7 @@ export function Hero() {
                     that the earlier "too long as one line" problem
                     doesn't apply here. */}
                 <span className="tracking-luxury text-cream-50/90 block text-sm font-medium sm:text-base lg:text-lg">
-                  You&apos;ll Love Spending Time Here.
+                  Your New Favorite Spot
                 </span>
 
                 {/* The decorative mark that lived here (brush-stroke,

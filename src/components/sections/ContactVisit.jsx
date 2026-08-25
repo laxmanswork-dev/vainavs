@@ -194,9 +194,7 @@ export function ContactVisit() {
         >
           <Kicker className="justify-center">Contact</Kicker>
           <h1 className="mt-3 text-4xl leading-tight sm:text-5xl">Come Visit Vainav&apos;s</h1>
-          <p className="text-ink-muted mx-auto mt-4 max-w-md text-lg">
-            You&apos;ll Love Spending Time Here.
-          </p>
+          <p className="text-ink-muted mx-auto mt-4 max-w-md text-lg">Your New Favorite Spot</p>
         </motion.div>
 
         {/* 3 equal columns at sm+, generous gap doing the separation work

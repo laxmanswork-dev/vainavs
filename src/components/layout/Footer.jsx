@@ -119,17 +119,15 @@ export function Footer() {
             {hours.days.replace('Monday', 'Mon').replace('Sunday', 'Sun')}
           </p>
           <p className="text-cream-200/70 mt-1 text-sm">{hours.display}</p>
-          {/* "Good Food. Good Mood. Better Memories." -> "YOU'LL LOVE
-              SPENDING TIME HERE." per follow-up — text only; the exact
-              same classes as before (text-gold-300/80 mt-4 text-xs
-              italic) are untouched, per "use the existing footer
-              tagline typography/style." Written in literal caps in the
-              source (not a CSS uppercase transform) since that's exactly
-              how the follow-up itself specified the target string, and
-              this element had no existing transform to hook into. */}
-          <p className="text-gold-300/80 mt-4 text-xs italic">
-            YOU&apos;LL LOVE SPENDING TIME HERE.
-          </p>
+          {/* Tagline text swapped again per the latest follow-up — same
+              exact classes as before (text-gold-300/80 mt-4 text-xs
+              italic), untouched, per "keep the exact existing
+              typography... visual styling." Still written in literal
+              caps in the source (not a CSS uppercase transform, since
+              this element has none to hook into) so the rendered result
+              keeps looking the same all-caps way it always has, not
+              just carrying the same words. */}
+          <p className="text-gold-300/80 mt-4 text-xs italic">YOUR NEW FAVORITE SPOT</p>
         </div>
 
         {/* col-span-2 sm:col-span-1 — matches "Call Us" below (the other
