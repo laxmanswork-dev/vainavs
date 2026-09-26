@@ -36,8 +36,9 @@ const WHATSAPP_HREF = `${SITE_CONFIG.social.whatsapp}?text=${encodeURIComponent(
  * Sized/positioned/z-indexed independently of the rest of the page's own
  * breakpoint system (which keys off `lg`, 1024px) — this is a simple
  * two-state "mobile vs everything bigger" utility, so the standard
- * Tailwind `sm` (640px) split is the right, simplest tool: 48px/16px
- * insets below it, 52px/20px at and above it, per spec.
+ * Tailwind `sm` (640px) split is the right, simplest tool: a fixed,
+ * deliberately very small 36px button (20px icon) at every size, with
+ * 16px insets below `sm` and 20px at and above it.
  * z-30 — deliberately BELOW the fixed Navbar (z-50) and the mobile
  * FullscreenMenu overlay (z-40, see Navbar.jsx), so opening the mobile
  * menu correctly covers this button instead of it floating oddly on top
@@ -62,9 +63,9 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       aria-label="Chat with Vainav's Cafeteria on WhatsApp"
       title="Chat on WhatsApp"
-      className="ease-luxury shadow-soft fixed right-4 bottom-4 z-30 flex size-12 items-center justify-center rounded-full bg-[#25D366] text-white transition-[background-color,transform] duration-[var(--duration-fast)] hover:scale-105 hover:bg-[#20BD5A] active:scale-95 sm:right-5 sm:bottom-5 sm:size-[52px]"
+      className="ease-luxury shadow-soft fixed right-4 bottom-4 z-30 flex size-9 items-center justify-center rounded-full bg-[#25D366] text-white transition-[background-color,transform] duration-[var(--duration-fast)] hover:scale-105 hover:bg-[#20BD5A] active:scale-95 sm:right-5 sm:bottom-5"
     >
-      <FaWhatsapp className="size-6 sm:size-7" aria-hidden="true" />
+      <FaWhatsapp className="size-5" aria-hidden="true" />
     </a>
   )
 }
