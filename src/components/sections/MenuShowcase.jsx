@@ -341,10 +341,6 @@ export function MenuShowcase() {
         >
           <Kicker className="justify-center">Menu</Kicker>
           <h1 className="mt-3 text-4xl leading-tight sm:text-5xl">The Vainav's Menu</h1>
-          <p className="text-ink-muted mx-auto mt-4 max-w-md text-lg">
-            From comforting classics to indulgent favourites, discover something made for every
-            craving.
-          </p>
         </motion.div>
 
         {/* Category filter — hand-cut PaperTag labels, not rounded-full
